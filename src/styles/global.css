@@ -367,7 +367,7 @@ select.input-field {
   margin-bottom: 16px;
 }
 
-.match-team { text-align: center; flex: 1; }
+.match-team { text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
 
 .match-team-name {
   font-family: 'Oswald', sans-serif;
@@ -882,6 +882,106 @@ select.input-field {
   to { opacity: 1; transform: translateY(0); }
 }
 .fade-in { animation: fadeIn 0.3s ease forwards; }
+
+/* ==================== TEAM AUTOCOMPLETE ==================== */
+.team-suggestions {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  z-index: 300;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.team-suggestion {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.1s;
+  color: var(--text-secondary);
+}
+.team-suggestion:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+/* ==================== TOASTS ==================== */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  max-width: 340px;
+  width: calc(100vw - 48px);
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  backdrop-filter: blur(12px);
+  pointer-events: all;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.toast-message {
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 2px;
+}
+.toast-close:hover { opacity: 1; }
+
+.toast-success {
+  background: rgba(22, 163, 74, 0.15);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: var(--accent-green);
+}
+.toast-info {
+  background: rgba(59, 130, 246, 0.12);
+  border-color: rgba(59, 130, 246, 0.25);
+  color: #93c5fd;
+}
+.toast-warning {
+  background: rgba(212, 168, 67, 0.12);
+  border-color: rgba(212, 168, 67, 0.25);
+  color: var(--accent-gold);
+}
+
+@media (max-width: 768px) {
+  .toast-container {
+    bottom: 16px;
+    right: 16px;
+    left: 16px;
+    width: auto;
+    max-width: none;
+  }
+}
 
 /* ==================== SCROLLBAR ==================== */
 ::-webkit-scrollbar { width: 6px; }

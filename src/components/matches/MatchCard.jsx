@@ -1,5 +1,6 @@
 import { Clock } from 'lucide-react';
 import { Badge, TokenCoin } from '@/components/ui/Components';
+import TeamLogo from '@/components/ui/TeamLogo';
 import { formatDateShort, isMatchStarted, isMatchUpcoming } from '@/lib/utils';
 
 export default function MatchCard({ match, userId, bets, markets, onClick }) {
@@ -27,6 +28,7 @@ export default function MatchCard({ match, userId, bets, markets, onClick }) {
       <div className="match-card-body">
         <div className="match-teams">
           <div className="match-team">
+            <TeamLogo name={match.home_team} size={36} />
             <div className="match-team-name">{match.home_team}</div>
           </div>
           {match.is_finished || (match.home_score !== null && match.away_score !== null) ? (
@@ -35,6 +37,7 @@ export default function MatchCard({ match, userId, bets, markets, onClick }) {
             <div className="match-vs">VS</div>
           )}
           <div className="match-team">
+            <TeamLogo name={match.away_team} size={36} />
             <div className="match-team-name">{match.away_team}</div>
           </div>
         </div>

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Plus, Settings, Lock, Unlock, Trash2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useTournamentData } from '@/hooks/useTournamentData';
 import { isMatchUpcoming, isMatchStarted } from '@/lib/utils';
 import { updateTournament, deleteTournament } from '@/lib/db';
@@ -16,7 +17,41 @@ export default function TournamentPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { tournament, matches, members, profiles, markets, marketOptions, bets, loading, reload } = useTournamentData(id);
+  const { addToast } = useToast();
   const [tab, setTab] = useState('upcoming');
+
+  // Notifications Realtime (ne se déclenchent pas au chargement initial)
+  const initializedRef = useRef(false);
+  const prevMatchCountRef = useRef(0);
+  const prevLockedRef = useRef(null);
+
+  useEffect(() => {
+    if (loading) return;
+    if (!initializedRef.current) {
+      initializedRef.current = true;
+      prevMatchCountRef.current = matches.length;
+      prevLockedRef.current = tournament?.is_locked;
+      return;
+    }
+    // Nouveau match ajouté
+    if (matches.length > prevMatchCountRef.current) {
+      const newMatch = [...matches].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
+      addToast(`📅 Nouveau match : ${newMatch.home_team} vs ${newMatch.away_team}`, 'info');
+    }
+    prevMatchCountRef.current = matches.length;
+  }, [matches.length, loading]);
+
+  useEffect(() => {
+    if (prevLockedRef.current === null || tournament?.is_locked === prevLockedRef.current) {
+      prevLockedRef.current = tournament?.is_locked;
+      return;
+    }
+    addToast(
+      tournament.is_locked ? '🔒 Le tournoi a été verrouillé' : '🔓 Le tournoi est de nouveau ouvert',
+      'warning'
+    );
+    prevLockedRef.current = tournament?.is_locked;
+  }, [tournament?.is_locked]);
   const [showAddMatch, setShowAddMatch] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [adminLoading, setAdminLoading] = useState(false);

@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Plus, Check, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { useMatchData } from '@/hooks/useMatchData';
 import { isMatchStarted, isMatchUpcoming, formatDate } from '@/lib/utils';
 import { Button, Badge, PageTransition, EmptyState } from '@/components/ui/Components';
+import TeamLogo from '@/components/ui/TeamLogo';
 import BettingPanel from '@/components/betting/BettingPanel';
 import AddMarketModal from '@/components/betting/AddMarketModal';
 import ValidateMatchModal from '@/components/betting/ValidateMatchModal';
@@ -14,8 +16,29 @@ export default function MatchPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { match, tournament, markets, marketOptions, bets, loading, reload } = useMatchData(matchId, tournamentId);
+  const { addToast } = useToast();
   const [showAddMarket, setShowAddMarket] = useState(false);
   const [showValidate, setShowValidate] = useState(false);
+
+  // Notification quand le match passe à "terminé"
+  const prevFinishedRef = useRef(null);
+  useEffect(() => {
+    if (!match) return;
+    if (prevFinishedRef.current === null) {
+      prevFinishedRef.current = match.is_finished;
+      return;
+    }
+    if (!prevFinishedRef.current && match.is_finished) {
+      const myBets = bets.filter((b) => b.user_id === user.id);
+      const myPoints = myBets.reduce((s, b) => s + (parseFloat(b.points_won) || 0), 0);
+      if (myPoints > 0) {
+        addToast(`🏆 Résultat validé — tu remportes ${myPoints.toFixed(1)} pts !`, 'success', 6000);
+      } else {
+        addToast(`⚽ Résultat validé — ${match.home_team} ${match.home_score}-${match.away_score} ${match.away_team}`, 'info');
+      }
+    }
+    prevFinishedRef.current = match.is_finished;
+  }, [match?.is_finished]);
 
   if (loading) return <EmptyState description="Chargement..." />;
   if (!match) return <EmptyState description="Match introuvable" />;
@@ -46,6 +69,7 @@ export default function MatchPage() {
 
         <div className="match-teams" style={{ marginBottom: 0 }}>
           <div className="match-team">
+            <TeamLogo name={match.home_team} size={52} />
             <div className="match-team-name match-team-name-lg">{match.home_team}</div>
           </div>
           {match.is_finished || match.home_score !== null ? (
@@ -54,6 +78,7 @@ export default function MatchPage() {
             <div className="match-vs match-vs-lg">VS</div>
           )}
           <div className="match-team">
+            <TeamLogo name={match.away_team} size={52} />
             <div className="match-team-name match-team-name-lg">{match.away_team}</div>
           </div>
         </div>

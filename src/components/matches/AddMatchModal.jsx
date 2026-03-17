@@ -3,6 +3,7 @@ import { Plus, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { createMatch, createMarket, createMarketOption } from '@/lib/db';
 import { MARKET_TYPES, MARKET_PRESETS } from '@/lib/constants';
 import { Modal, Button, Message } from '@/components/ui/Components';
+import TeamInput from '@/components/ui/TeamInput';
 
 const makeMarket = (type = '1N2') => {
   const preset = MARKET_PRESETS[type];
@@ -126,21 +127,11 @@ export default function AddMatchModal({ open, tournamentId, onClose, onAdded }) 
       <div style={{ display: 'flex', gap: 10, marginBottom: 0 }}>
         <div className="input-group" style={{ flex: 1, marginBottom: 12 }}>
           <label>Domicile</label>
-          <input
-            className="input-field"
-            value={homeTeam}
-            onChange={(e) => setHomeTeam(e.target.value)}
-            placeholder="Ex: France"
-          />
+          <TeamInput value={homeTeam} onChange={setHomeTeam} placeholder="Ex: France" />
         </div>
         <div className="input-group" style={{ flex: 1, marginBottom: 12 }}>
           <label>Extérieur</label>
-          <input
-            className="input-field"
-            value={awayTeam}
-            onChange={(e) => setAwayTeam(e.target.value)}
-            placeholder="Ex: Allemagne"
-          />
+          <TeamInput value={awayTeam} onChange={setAwayTeam} placeholder="Ex: Allemagne" />
         </div>
       </div>
 
