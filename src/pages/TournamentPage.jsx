@@ -60,11 +60,7 @@ export default function TournamentPage() {
     prevLockedRef.current = tournament?.is_locked;
   }, [loading, matches.length, tournament?.is_locked]);
 
-  if (loading) return <EmptyState description="Chargement..." />;
-  if (!tournament) return <EmptyState description="Tournoi introuvable" />;
-
-  const isAdmin = tournament.admin_id === user.id;
-
+  // Les useMemo DOIVENT être avant tout return conditionnel (Rules of Hooks)
   const upcomingMatches = useMemo(
     () => matches.filter((m) => !m.is_finished && isMatchUpcoming(m.kickoff)),
     [matches]
@@ -78,11 +74,16 @@ export default function TournamentPage() {
     [matches]
   );
 
-  const matchSubTabs = useMemo(() => [
+  if (loading) return <EmptyState description="Chargement..." />;
+  if (!tournament) return <EmptyState description="Tournoi introuvable" />;
+
+  const isAdmin = tournament.admin_id === user.id;
+
+  const matchSubTabs = [
     { key: 'upcoming', label: 'À venir', count: upcomingMatches.length },
     { key: 'live', label: 'En cours', count: startedMatches.length },
     { key: 'finished', label: 'Terminés', count: finishedMatches.length },
-  ], [upcomingMatches.length, startedMatches.length, finishedMatches.length]);
+  ];
 
   const currentMatches =
     matchTab === 'upcoming' ? upcomingMatches :
