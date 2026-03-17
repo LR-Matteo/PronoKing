@@ -4,9 +4,9 @@ import {
   fetchMatches,
   fetchTournamentMembers,
   fetchProfiles,
-  fetchMarkets,
-  fetchMarketOptions,
-  fetchBets,
+  fetchMarketsByMatches,
+  fetchMarketOptionsByMarkets,
+  fetchBetsByMatches,
 } from '@/lib/db';
 import { supabase, DEMO_MODE } from '@/lib/supabase';
 
@@ -21,7 +21,6 @@ export function useTournamentData(tournamentId) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Refs pour éviter les closures périmées dans les callbacks Realtime
   const matchIdsRef = useRef([]);
   const marketIdsRef = useRef([]);
 
@@ -35,35 +34,24 @@ export function useTournamentData(tournamentId) {
         fetchProfiles(),
       ]);
 
+      const matchIds = m.map((x) => x.id);
+      matchIdsRef.current = matchIds;
+
+      // 3 requêtes batch au lieu de N+1
+      const [allMarkets, allBets] = await Promise.all([
+        fetchMarketsByMatches(matchIds),
+        fetchBetsByMatches(matchIds),
+      ]);
+
+      const marketIds = allMarkets.map((mk) => mk.id);
+      marketIdsRef.current = marketIds;
+
+      const allOptions = await fetchMarketOptionsByMarkets(marketIds);
+
       setTournament(t);
       setMatches(m);
       setMembers(mem);
       setProfiles(p);
-
-      const matchIds = m.map((x) => x.id);
-      matchIdsRef.current = matchIds;
-
-      let allMarkets = [];
-      let allBets = [];
-
-      await Promise.all(
-        matchIds.map(async (mid) => {
-          const [mk, b] = await Promise.all([fetchMarkets(mid), fetchBets(mid)]);
-          allMarkets = [...allMarkets, ...mk];
-          allBets = [...allBets, ...b];
-        })
-      );
-
-      let allOptions = [];
-      await Promise.all(
-        allMarkets.map(async (mk) => {
-          const opts = await fetchMarketOptions(mk.id);
-          allOptions = [...allOptions, ...opts];
-        })
-      );
-
-      marketIdsRef.current = allMarkets.map((mk) => mk.id);
-
       setMarkets(allMarkets);
       setMarketOptions(allOptions);
       setBets(allBets);
@@ -75,12 +63,11 @@ export function useTournamentData(tournamentId) {
     }
   }, [tournamentId]);
 
-  // Rechargement silencieux (sans spinner) pour les updates Realtime
   const silentReloadBets = useCallback(async () => {
     const ids = matchIdsRef.current;
     if (!ids.length) return;
-    const results = await Promise.all(ids.map((mid) => fetchBets(mid)));
-    setBets(results.flat());
+    const data = await fetchBetsByMatches(ids);
+    setBets(data);
   }, []);
 
   const silentReloadMatches = useCallback(async () => {
@@ -98,7 +85,7 @@ export function useTournamentData(tournamentId) {
     if (tournamentId) load();
   }, [tournamentId, load]);
 
-  // Écoute les mises à jour de profil (avatar, etc.) déclenchées depuis ProfileModal
+  // Écoute les mises à jour d'avatar depuis ProfileModal (demo + prod)
   useEffect(() => {
     const handler = (e) => {
       setProfiles((prev) =>
@@ -116,7 +103,6 @@ export function useTournamentData(tournamentId) {
     const channel = supabase
       .channel(`tournament-${tournamentId}`)
 
-      // Tournoi modifié (verrou, suppression…)
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'tournaments', filter: `id=eq.${tournamentId}` },
@@ -125,14 +111,12 @@ export function useTournamentData(tournamentId) {
         }
       )
 
-      // Match ajouté, score mis à jour, match terminé
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'matches', filter: `tournament_id=eq.${tournamentId}` },
         () => { silentReloadMatches(); }
       )
 
-      // Paris posés/modifiés → classement recalculé
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'bets' },
@@ -144,7 +128,6 @@ export function useTournamentData(tournamentId) {
         }
       )
 
-      // Option gagnante validée par l'admin
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'market_options' },
@@ -157,7 +140,6 @@ export function useTournamentData(tournamentId) {
         }
       )
 
-      // Nouveau membre rejoint
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'tournament_members', filter: `tournament_id=eq.${tournamentId}` },
@@ -166,7 +148,6 @@ export function useTournamentData(tournamentId) {
         }
       )
 
-      // Avatar ou profil mis à jour
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'profiles' },
@@ -181,7 +162,10 @@ export function useTournamentData(tournamentId) {
 
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      channel.unsubscribe();
+      supabase.removeChannel(channel);
+    };
   }, [tournamentId, silentReloadBets, silentReloadMatches]);
 
   return {

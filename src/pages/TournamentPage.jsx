@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Plus, Settings, Lock, Unlock, Trash2, Trophy, CalendarDays } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,51 +27,62 @@ export default function TournamentPage() {
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminError, setAdminError] = useState('');
 
-  // Notifications Realtime
+  // Notifications Realtime — un seul effet pour éviter les désynchronisations
   const initializedRef = useRef(false);
   const prevMatchCountRef = useRef(0);
   const prevLockedRef = useRef(null);
 
   useEffect(() => {
     if (loading) return;
+
+    // Premier passage : mémoriser l'état initial sans notifier
     if (!initializedRef.current) {
       initializedRef.current = true;
       prevMatchCountRef.current = matches.length;
       prevLockedRef.current = tournament?.is_locked;
       return;
     }
+
+    // Nouveau match ajouté
     if (matches.length > prevMatchCountRef.current) {
       const newMatch = [...matches].sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0];
       addToast(`📅 Nouveau match : ${newMatch.home_team} vs ${newMatch.away_team}`, 'info');
     }
     prevMatchCountRef.current = matches.length;
-  }, [matches.length, loading]);
 
-  useEffect(() => {
-    if (prevLockedRef.current === null || tournament?.is_locked === prevLockedRef.current) {
-      prevLockedRef.current = tournament?.is_locked;
-      return;
+    // Tournoi verrouillé / déverrouillé
+    if (tournament?.is_locked !== prevLockedRef.current) {
+      addToast(
+        tournament.is_locked ? '🔒 Le tournoi a été verrouillé' : '🔓 Le tournoi est de nouveau ouvert',
+        'warning'
+      );
     }
-    addToast(
-      tournament.is_locked ? '🔒 Le tournoi a été verrouillé' : '🔓 Le tournoi est de nouveau ouvert',
-      'warning'
-    );
     prevLockedRef.current = tournament?.is_locked;
-  }, [tournament?.is_locked]);
+  }, [loading, matches.length, tournament?.is_locked]);
 
   if (loading) return <EmptyState description="Chargement..." />;
   if (!tournament) return <EmptyState description="Tournoi introuvable" />;
 
   const isAdmin = tournament.admin_id === user.id;
-  const upcomingMatches = matches.filter((m) => !m.is_finished && isMatchUpcoming(m.kickoff));
-  const startedMatches = matches.filter((m) => !m.is_finished && isMatchStarted(m.kickoff));
-  const finishedMatches = matches.filter((m) => m.is_finished);
 
-  const matchSubTabs = [
+  const upcomingMatches = useMemo(
+    () => matches.filter((m) => !m.is_finished && isMatchUpcoming(m.kickoff)),
+    [matches]
+  );
+  const startedMatches = useMemo(
+    () => matches.filter((m) => !m.is_finished && isMatchStarted(m.kickoff)),
+    [matches]
+  );
+  const finishedMatches = useMemo(
+    () => matches.filter((m) => m.is_finished),
+    [matches]
+  );
+
+  const matchSubTabs = useMemo(() => [
     { key: 'upcoming', label: 'À venir', count: upcomingMatches.length },
     { key: 'live', label: 'En cours', count: startedMatches.length },
     { key: 'finished', label: 'Terminés', count: finishedMatches.length },
-  ];
+  ], [upcomingMatches.length, startedMatches.length, finishedMatches.length]);
 
   const currentMatches =
     matchTab === 'upcoming' ? upcomingMatches :

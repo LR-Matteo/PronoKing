@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AlertCircle, ChevronRight, Star, Target, Zap } from 'lucide-react';
 import { formatDateShort, isMatchUpcoming } from '@/lib/utils';
 import { TokenCoin } from '@/components/ui/Components';
+import { useRankings } from '@/hooks/useRankings';
 
 export default function PlayerDashboard({
   userId,
@@ -23,34 +24,24 @@ export default function PlayerDashboard({
   );
   const bankRemaining = tokenBank - myTotalTokensSpent;
 
-  const { myRank, myPoints, upcomingUnbet, nextUnbet } = useMemo(() => {
-    // Classement
-    const rankings = members
-      .map((m) => {
-        const points = bets
-          .filter((b) => b.user_id === m.user_id)
-          .reduce((sum, b) => sum + (parseFloat(b.points_won) || 0), 0);
-        return { userId: m.user_id, points };
-      })
-      .sort((a, b) => b.points - a.points);
+  const rankings = useRankings(members, profiles, bets);
 
+  const { myRank, myPoints, upcomingUnbet } = useMemo(() => {
     const myRankIdx = rankings.findIndex((r) => r.userId === userId);
     const myRank = myRankIdx >= 0 ? myRankIdx + 1 : null;
     const myPoints = rankings[myRankIdx]?.points || 0;
 
-    // Matchs à venir sans pari
-    const betMatchIds = new Set(bets.filter((b) => b.user_id === userId).map((b) => b.match_id));
+    const betMatchIds = new Set(
+      bets.filter((b) => b.user_id === userId).map((b) => b.match_id)
+    );
     const upcomingUnbet = matches
       .filter((m) => !m.is_finished && isMatchUpcoming(m.kickoff) && !betMatchIds.has(m.id))
       .sort((a, b) => new Date(a.kickoff) - new Date(b.kickoff));
 
-    return {
-      myRank,
-      myPoints,
-      upcomingUnbet,
-      nextUnbet: upcomingUnbet[0] || null,
-    };
-  }, [userId, members, bets, matches]);
+    return { myRank, myPoints, upcomingUnbet };
+  }, [userId, rankings, bets, matches]);
+
+  const nextUnbet = upcomingUnbet[0] || null;
 
   const rankLabel = (rank) => {
     if (rank === 1) return '🥇';

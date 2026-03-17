@@ -89,6 +89,13 @@ export async function fetchMarkets(matchId) {
   return data || [];
 }
 
+export async function fetchMarketsByMatches(matchIds) {
+  if (!matchIds || matchIds.length === 0) return [];
+  const { data, error } = await db.from('markets').select('*').in('match_id', matchIds);
+  if (error) throw error;
+  return data || [];
+}
+
 export async function createMarket(market) {
   const { data, error } = await db.from('markets').insert(market).select().single();
   if (error) throw error;
@@ -97,6 +104,13 @@ export async function createMarket(market) {
 
 export async function fetchMarketOptions(marketId) {
   const { data, error } = await db.from('market_options').select('*').eq('market_id', marketId);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function fetchMarketOptionsByMarkets(marketIds) {
+  if (!marketIds || marketIds.length === 0) return [];
+  const { data, error } = await db.from('market_options').select('*').in('market_id', marketIds);
   if (error) throw error;
   return data || [];
 }
@@ -115,6 +129,13 @@ export async function updateMarketOption(id, updates) {
 
 export async function fetchBets(matchId) {
   const { data, error } = await db.from('bets').select('*').eq('match_id', matchId);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function fetchBetsByMatches(matchIds) {
+  if (!matchIds || matchIds.length === 0) return [];
+  const { data, error } = await db.from('bets').select('*').in('match_id', matchIds);
   if (error) throw error;
   return data || [];
 }

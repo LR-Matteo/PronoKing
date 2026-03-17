@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { fetchMatch, fetchTournament, fetchMarkets, fetchMarketOptions, fetchBets } from '@/lib/db';
+import { fetchMatch, fetchTournament, fetchMarkets, fetchMarketOptionsByMarkets, fetchBets } from '@/lib/db';
 import { supabase, DEMO_MODE } from '@/lib/supabase';
 
 export function useMatchData(matchId, tournamentId) {
@@ -16,22 +16,17 @@ export function useMatchData(matchId, tournamentId) {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const [m, t, mk] = await Promise.all([
+      const [m, t, mk, b] = await Promise.all([
         fetchMatch(matchId),
         fetchTournament(tournamentId),
         fetchMarkets(matchId),
+        fetchBets(matchId),
       ]);
-      const b = await fetchBets(matchId);
 
-      let allOpts = [];
-      await Promise.all(
-        (mk || []).map(async (market) => {
-          const opts = await fetchMarketOptions(market.id);
-          allOpts = [...allOpts, ...opts];
-        })
-      );
+      const marketIds = (mk || []).map((market) => market.id);
+      marketIdsRef.current = marketIds;
 
-      marketIdsRef.current = (mk || []).map((market) => market.id);
+      const allOpts = await fetchMarketOptionsByMarkets(marketIds);
 
       setMatch(m);
       setTournament(t);
@@ -99,7 +94,10 @@ export function useMatchData(matchId, tournamentId) {
 
       .subscribe();
 
-    return () => { supabase.removeChannel(channel); };
+    return () => {
+      channel.unsubscribe();
+      supabase.removeChannel(channel);
+    };
   }, [matchId]);
 
   return { match, tournament, markets, marketOptions, bets, loading, reload: load };

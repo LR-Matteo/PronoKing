@@ -1,23 +1,12 @@
-import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trophy } from 'lucide-react';
 import { classNames } from '@/lib/utils';
+import { useRankings } from '@/hooks/useRankings';
 import UserAvatar from '@/components/ui/UserAvatar';
 
 export default function Leaderboard({ members, profiles, bets, tournamentId }) {
   const navigate = useNavigate();
-
-  const rankings = useMemo(() => {
-    return members
-      .map((m) => {
-        const profile = profiles.find((p) => p.id === m.user_id);
-        const points = bets
-          .filter((b) => b.user_id === m.user_id)
-          .reduce((sum, b) => sum + (parseFloat(b.points_won) || 0), 0);
-        return { userId: m.user_id, username: profile?.username || '?', avatar: profile?.avatar || null, points };
-      })
-      .sort((a, b) => b.points - a.points);
-  }, [members, profiles, bets]);
+  const rankings = useRankings(members, profiles, bets);
 
   const rankClass = (i) => {
     if (i === 0) return 'rank-1';

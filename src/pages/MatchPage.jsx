@@ -4,7 +4,7 @@ import { ChevronLeft, Plus, Check, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useMatchData } from '@/hooks/useMatchData';
-import { fetchMatches, fetchBetsByUser } from '@/lib/db';
+import { fetchMatches, fetchBetsByUser, fetchBetsByMatches } from '@/lib/db';
 import { isMatchStarted, isMatchUpcoming, formatDate } from '@/lib/utils';
 import { Button, Badge, PageTransition, EmptyState } from '@/components/ui/Components';
 import TeamLogo from '@/components/ui/TeamLogo';
@@ -24,13 +24,12 @@ export default function MatchPage() {
 
   // In bank mode, load all user bets across the tournament for budget calculation
   useEffect(() => {
-    if (!tournament || !user) return;
-    if (tournament.token_mode !== 'bank') return;
+    if (!tournament || !user || tournament.token_mode !== 'bank') return;
     fetchMatches(tournament.id)
-      .then((matches) => fetchBetsByUser(user.id, matches.map((m) => m.id)))
+      .then((ms) => fetchBetsByUser(user.id, ms.map((m) => m.id)))
       .then(setAllTournamentBets)
       .catch(() => {});
-  }, [tournament?.id, tournament?.token_mode, user?.id]);
+  }, [tournament?.id, user?.id]);
 
   // Notification quand le match passe à "terminé"
   const prevFinishedRef = useRef(null);
@@ -134,10 +133,9 @@ export default function MatchPage() {
           allTournamentBets={allTournamentBets}
           onBetsUpdated={() => {
             reload();
-            // Refresh tournament-wide bets after saving
             if (tournament?.token_mode === 'bank') {
               fetchMatches(tournament.id)
-                .then((matches) => fetchBetsByUser(user.id, matches.map((m) => m.id)))
+                .then((ms) => fetchBetsByUser(user.id, ms.map((m) => m.id)))
                 .then(setAllTournamentBets)
                 .catch(() => {});
             }
