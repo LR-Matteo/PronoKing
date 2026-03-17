@@ -687,6 +687,59 @@ select.input-field {
 .tokens-remaining.over { color: var(--accent-red); }
 
 /* ==================== TABS ==================== */
+/* Onglets principaux (Matchs / Classement) */
+.main-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.main-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-muted);
+  font-family: 'Oswald', sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.main-tab:hover {
+  color: var(--text-secondary);
+  border-color: var(--text-muted);
+}
+
+.main-tab.active {
+  background: color-mix(in srgb, var(--accent-gold) 12%, var(--surface-1));
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+}
+
+.main-tab-badge {
+  background: var(--accent-green);
+  color: #fff;
+  font-size: 11px;
+  font-family: sans-serif;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* Sous-onglets matchs (À venir / En cours / Terminés) */
 .tabs {
   display: flex;
   gap: 4px;
