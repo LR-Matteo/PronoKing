@@ -1,318 +1,82 @@
 [
   {
-    "name": "AC Milan",
-    "logo": "https://static.flashscore.com/res/image/data/htYjIjFa-KtCfnbWp.png"
+    "name": "Alaves",
+    "logo": "https://static.flashscore.com/res/image/data/hrI86AzS-4U3vjZKk.png"
   },
   {
-    "name": "Angers",
-    "logo": "https://static.flashscore.com/res/image/data/t8LjlaWg-z9nPuk2r.png"
+    "name": "Ath Bilbao",
+    "logo": "https://static.flashscore.com/res/image/data/Y7CgBGYg-vJb36ZBF.png"
   },
   {
-    "name": "Arsenal",
-    "logo": "https://static.flashscore.com/res/image/data/pfchdCg5-vcNAdtF9.png"
+    "name": "Atl. Madrid",
+    "logo": "https://static.flashscore.com/res/image/data/CjfjIsYg-GhHiNvXF.png"
   },
   {
-    "name": "AS Roma",
-    "logo": "https://static.flashscore.com/res/image/data/QPgsexZA-GtNb9h2q.png"
+    "name": "Barcelona",
+    "logo": "https://static.flashscore.com/res/image/data/8dhw5vxS-fcDVLdrL.png"
   },
   {
-    "name": "Aston Villa",
-    "logo": "https://static.flashscore.com/res/image/data/QsnteKXg-jwz95gs0.png"
+    "name": "Betis",
+    "logo": "https://static.flashscore.com/res/image/data/hvyaw5HG-zkU5wiAr.png"
   },
   {
-    "name": "Atalanta",
-    "logo": "https://static.flashscore.com/res/image/data/xASUZ6il-rg6usZns.png"
+    "name": "Celta Vigo",
+    "logo": "https://static.flashscore.com/res/image/data/O2htOWDa-SOY3p1Si.png"
   },
   {
-    "name": "Augsburg",
-    "logo": "https://static.flashscore.com/res/image/data/6ZUvwjgl-Qmnf8wEL.png"
+    "name": "Espanyol",
+    "logo": "https://static.flashscore.com/res/image/data/SObn7xDr-Msjm1Bq4.png"
   },
   {
-    "name": "Auxerre",
-    "logo": "https://static.flashscore.com/res/image/data/CngTkQyS-tY3UBVrm.png"
+    "name": "Getafe",
+    "logo": "https://static.flashscore.com/res/image/data/OjieMlGG-YmCZKGcR.png"
   },
   {
-    "name": "B. Monchengladbach",
-    "logo": "https://static.flashscore.com/res/image/data/rDRx1VXg-84sATBUR.png"
+    "name": "Girona",
+    "logo": "https://static.flashscore.com/res/image/data/xGkOqFDa-vPm0hQMN.png"
   },
   {
-    "name": "Bayer Leverkusen",
-    "logo": "https://static.flashscore.com/res/image/data/OWpaDOYA-WrjrBuU2.png"
+    "name": "Las Palmas",
+    "logo": "https://static.flashscore.com/res/image/data/44xPoqHG-d6gaf9ua.png"
   },
   {
-    "name": "Bayern Munich",
-    "logo": "https://static.flashscore.com/res/image/data/tMir8iCr-SvLFaVNH.png"
+    "name": "Leganes",
+    "logo": "https://static.flashscore.com/res/image/data/IqhNyYjl-Q3zX1dyT.png"
   },
   {
-    "name": "Bochum",
-    "logo": "https://static.flashscore.com/res/image/data/nyouWtil-86lnAaq9.png"
+    "name": "Mallorca",
+    "logo": "https://static.flashscore.com/res/image/data/pSBNl3eM-rmDEjevK.png"
   },
   {
-    "name": "Bologna",
-    "logo": "https://static.flashscore.com/res/image/data/j3Tyh1GG-McvX4bye.png"
+    "name": "Osasuna",
+    "logo": "https://static.flashscore.com/res/image/data/84LOczeM-Yu8w588N.png"
   },
   {
-    "name": "Bournemouth",
-    "logo": "https://static.flashscore.com/res/image/data/2Pb55xWg-tCGtX12c.png"
+    "name": "Rayo Vallecano",
+    "logo": "https://static.flashscore.com/res/image/data/jqaha0f5-EPWyZtpb.png"
   },
   {
-    "name": "Brentford",
-    "logo": "https://static.flashscore.com/res/image/data/bBj3NWfM-r9Mudk7j.png"
+    "name": "Real Madrid",
+    "logo": "https://static.flashscore.com/res/image/data/A7kHoxZA-ttfpEDUq.png"
   },
   {
-    "name": "Brest",
-    "logo": "https://static.flashscore.com/res/image/data/r9aDJ9eM-Q15G9lAm.png"
+    "name": "Real Sociedad",
+    "logo": "https://static.flashscore.com/res/image/data/QJraUAcM-vJb36ZBF.png"
   },
   {
-    "name": "Brighton",
-    "logo": "https://static.flashscore.com/res/image/data/40juIezB-b92lfEJC.png"
+    "name": "Sevilla",
+    "logo": "https://static.flashscore.com/res/image/data/G2BgO5Ar-tIT0KyhE.png"
   },
   {
-    "name": "Cagliari",
-    "logo": "https://static.flashscore.com/res/image/data/IBlLf9f5-McvX4bye.png"
+    "name": "Valencia",
+    "logo": "https://static.flashscore.com/res/image/data/Ioshoye5-MHrRLNUo.png"
   },
   {
-    "name": "Chelsea",
-    "logo": "https://static.flashscore.com/res/image/data/GMmvDEdM-IROrZEJb.png"
+    "name": "Valladolid",
+    "logo": "https://static.flashscore.com/res/image/data/pCJjU8yB-htRvrFH6.png"
   },
   {
-    "name": "Como",
-    "logo": "https://static.flashscore.com/res/image/data/Cf5pQNyS-hpmw8K1h.png"
-  },
-  {
-    "name": "Crystal Palace",
-    "logo": "https://static.flashscore.com/res/image/data/AFNlsDzS-drybTCiH.png"
-  },
-  {
-    "name": "Dortmund",
-    "logo": "https://static.flashscore.com/res/image/data/Yiq1eU9r-WrjrBuU2.png"
-  },
-  {
-    "name": "Dunkerque",
-    "logo": "https://static.flashscore.com/res/image/data/dEAWDdil-O8yOVkI8.png"
-  },
-  {
-    "name": "Eintracht Frankfurt",
-    "logo": "https://static.flashscore.com/res/image/data/f9dVVYCa-86lnAaq9.png"
-  },
-  {
-    "name": "Elversberg",
-    "logo": "https://static.flashscore.com/res/image/data/MiyVhgyB-QsgNMFNg.png"
-  },
-  {
-    "name": "Empoli",
-    "logo": "https://static.flashscore.com/res/image/data/xArvJNCa-KbH8aCLf.png"
-  },
-  {
-    "name": "Everton",
-    "logo": "https://static.flashscore.com/res/image/data/EwJqZUZA-bRmKmISE.png"
-  },
-  {
-    "name": "Fiorentina",
-    "logo": "https://static.flashscore.com/res/image/data/nPTphRh5-6XKdgOM6.png"
-  },
-  {
-    "name": "Freiburg",
-    "logo": "https://static.flashscore.com/res/image/data/ttZErLg5-86lnAaq9.png"
-  },
-  {
-    "name": "Fulham",
-    "logo": "https://static.flashscore.com/res/image/data/naaAVOzB-ImMEe0UF.png"
-  },
-  {
-    "name": "Genoa",
-    "logo": "https://static.flashscore.com/res/image/data/WznpqVfM-hCD6m1R3.png"
-  },
-  {
-    "name": "Heidenheim",
-    "logo": "https://static.flashscore.com/res/image/data/pEIoHCil-bNiAN2lt.png"
-  },
-  {
-    "name": "Hoffenheim",
-    "logo": "https://static.flashscore.com/res/image/data/I3cMF7f5-n7lWn9DL.png"
-  },
-  {
-    "name": "Holstein Kiel",
-    "logo": "https://static.flashscore.com/res/image/data/0bzaORYA-EcK7yLm6.png"
-  },
-  {
-    "name": "Inter",
-    "logo": "https://static.flashscore.com/res/image/data/lxz64qDa-O8c8nWOb.png"
-  },
-  {
-    "name": "Ipswich",
-    "logo": "https://static.flashscore.com/res/image/data/zm5vbmDa-0C98slBk.png"
-  },
-  {
-    "name": "Juventus",
-    "logo": "https://static.flashscore.com/res/image/data/GKF3dlf5-0nz5yHcE.png"
-  },
-  {
-    "name": "Lazio",
-    "logo": "https://static.flashscore.com/res/image/data/zXqymff5-EaFfQ9z6.png"
-  },
-  {
-    "name": "Le Havre",
-    "logo": "https://static.flashscore.com/res/image/data/WS3wfTzS-4v5cIBqb.png"
-  },
-  {
-    "name": "Lecce",
-    "logo": "https://static.flashscore.com/res/image/data/AaI0V5Fa-McvX4bye.png"
-  },
-  {
-    "name": "Leicester",
-    "logo": "https://static.flashscore.com/res/image/data/Em1CYqYg-UNZg5BP0.png"
-  },
-  {
-    "name": "Lens",
-    "logo": "https://static.flashscore.com/res/image/data/jqg52CDa-rTEFAmVL.png"
-  },
-  {
-    "name": "Lille",
-    "logo": "https://static.flashscore.com/res/image/data/Y91hQAzS-UDticXKP.png"
-  },
-  {
-    "name": "Liverpool",
-    "logo": "https://static.flashscore.com/res/image/data/Gr0cGteM-KCp4zq5F.png"
-  },
-  {
-    "name": "Lyon",
-    "logo": "https://static.flashscore.com/res/image/data/rytJfXyS-GU4hlIMk.png"
-  },
-  {
-    "name": "Mainz",
-    "logo": "https://static.flashscore.com/res/image/data/nwmyWZVg-EoYxhN5r.png"
-  },
-  {
-    "name": "Manchester City",
-    "logo": "https://static.flashscore.com/res/image/data/UXcqj7HG-lQuhqN8N.png"
-  },
-  {
-    "name": "Manchester Utd",
-    "logo": "https://static.flashscore.com/res/image/data/nwSRlyWg-h2pPXz3k.png"
-  },
-  {
-    "name": "Marseille",
-    "logo": "https://static.flashscore.com/res/image/data/AwlBhPfM-voNnDKJK.png"
-  },
-  {
-    "name": "Metz",
-    "logo": "https://static.flashscore.com/res/image/data/4MoVp0h5-pztT5vMl.png"
-  },
-  {
-    "name": "Monaco",
-    "logo": "https://static.flashscore.com/res/image/data/GzvUVteM-0SFGJsPk.png"
-  },
-  {
-    "name": "Montpellier",
-    "logo": "https://static.flashscore.com/res/image/data/4QDVStDa-n3xBmVJB.png"
-  },
-  {
-    "name": "Monza",
-    "logo": "https://static.flashscore.com/res/image/data/SUTtpvDa-8zvPU7k3.png"
-  },
-  {
-    "name": "Nantes",
-    "logo": "https://static.flashscore.com/res/image/data/nZSxLDZA-YBWLmubi.png"
-  },
-  {
-    "name": "Napoli",
-    "logo": "https://static.flashscore.com/res/image/data/lhPsgJWg-Stb48WaO.png"
-  },
-  {
-    "name": "Newcastle",
-    "logo": "https://static.flashscore.com/res/image/data/fojwJwZA-ImMEe0UF.png"
-  },
-  {
-    "name": "Nice",
-    "logo": "https://static.flashscore.com/res/image/data/boyRUvyB-00sqJmg8.png"
-  },
-  {
-    "name": "Nottingham",
-    "logo": "https://static.flashscore.com/res/image/data/GCLLkTzB-ImKwLTtA.png"
-  },
-  {
-    "name": "Parma",
-    "logo": "https://static.flashscore.com/res/image/data/YcrE7ae5-fydXzLY6.png"
-  },
-  {
-    "name": "PSG",
-    "logo": "https://static.flashscore.com/res/image/data/EskJufg5-A7UDDuOO.png"
-  },
-  {
-    "name": "RB Leipzig",
-    "logo": "https://static.flashscore.com/res/image/data/02lwXYkl-WvvSE8Dm.png"
-  },
-  {
-    "name": "Reims",
-    "logo": "https://static.flashscore.com/res/image/data/4Sf2DneM-x6KhF69U.png"
-  },
-  {
-    "name": "Rennes",
-    "logo": "https://static.flashscore.com/res/image/data/IsanuwAr-Y5eozcI6.png"
-  },
-  {
-    "name": "Southampton",
-    "logo": "https://static.flashscore.com/res/image/data/fmA9gnyB-raLYxovi.png"
-  },
-  {
-    "name": "St Etienne",
-    "logo": "https://static.flashscore.com/res/image/data/b7wgpIDa-8Ca53MKO.png"
-  },
-  {
-    "name": "St. Pauli",
-    "logo": "https://static.flashscore.com/res/image/data/QZX02wCr-lrmFNGea.png"
-  },
-  {
-    "name": "Strasbourg",
-    "logo": "https://static.flashscore.com/res/image/data/Muh3TJDa-lAc5wKNp.png"
-  },
-  {
-    "name": "Stuttgart",
-    "logo": "https://static.flashscore.com/res/image/data/x0YB6veM-f1Z3XxZa.png"
-  },
-  {
-    "name": "Torino",
-    "logo": "https://static.flashscore.com/res/image/data/OQWGjGcM-0lwy4Ij1.png"
-  },
-  {
-    "name": "Tottenham",
-    "logo": "https://static.flashscore.com/res/image/data/ARC62UAr-Ig5FKJZ5.png"
-  },
-  {
-    "name": "Toulouse",
-    "logo": "https://static.flashscore.com/res/image/data/ImntO9e5-COxgbCEm.png"
-  },
-  {
-    "name": "Udinese",
-    "logo": "https://static.flashscore.com/res/image/data/AZBQMaYA-SYw7EcY6.png"
-  },
-  {
-    "name": "Union Berlin",
-    "logo": "https://static.flashscore.com/res/image/data/dI26KXzB-ncmj9JbF.png"
-  },
-  {
-    "name": "Venezia",
-    "logo": "https://static.flashscore.com/res/image/data/WxiS2Wkl-Io3W04n8.png"
-  },
-  {
-    "name": "Verona",
-    "logo": "https://static.flashscore.com/res/image/data/vgsKSajl-Kxh373f3.png"
-  },
-  {
-    "name": "Werder Bremen",
-    "logo": "https://static.flashscore.com/res/image/data/lEp5rDFG-EVomMG4o.png"
-  },
-  {
-    "name": "West Ham",
-    "logo": "https://static.flashscore.com/res/image/data/Qo3RdMjl-Q9DJHs4l.png"
-  },
-  {
-    "name": "Wolfsburg",
-    "logo": "https://static.flashscore.com/res/image/data/xK5jP2FG-KjF1j4v3.png"
-  },
-  {
-    "name": "Wolves",
-    "logo": "https://static.flashscore.com/res/image/data/E7TgUZkl-ABWS7fBq.png"
+    "name": "Villarreal",
+    "logo": "https://static.flashscore.com/res/image/data/65Z85Uh5-GSuwY3p9.png"
   }
 ]
