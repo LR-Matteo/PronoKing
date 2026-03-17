@@ -14,6 +14,7 @@
 -- ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS token_bank INTEGER DEFAULT NULL;
 -- ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS max_tokens_per_match INTEGER DEFAULT NULL;
 -- ALTER TABLE profiles ADD COLUMN IF NOT EXISTS avatar TEXT DEFAULT NULL;
+-- CREATE POLICY "Public update profiles" ON profiles FOR UPDATE USING (true);
 --
 -- ==================== OPTION B : RESET COMPLET ====================
 -- ⚠️  Supprime TOUTES les données. À n'utiliser que sur une base vierge ou en dev.
@@ -130,6 +131,7 @@ ALTER TABLE bets ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Public read profiles" ON profiles FOR SELECT USING (true);
 CREATE POLICY "Public insert profiles" ON profiles FOR INSERT WITH CHECK (true);
+CREATE POLICY "Public update profiles" ON profiles FOR UPDATE USING (true);
 
 CREATE POLICY "Public read tournaments" ON tournaments FOR SELECT USING (true);
 CREATE POLICY "Public insert tournaments" ON tournaments FOR INSERT WITH CHECK (true);

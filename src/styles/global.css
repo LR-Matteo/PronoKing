@@ -910,6 +910,43 @@ select.input-field {
   flex-shrink: 0;
 }
 
+/* Jauge banque de jetons */
+.dashboard-bank {
+  margin: 0 0 10px;
+  padding: 10px 14px;
+  background: var(--surface-2);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.dashboard-bank-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.dashboard-bank-low {
+  color: var(--accent-gold);
+  font-weight: 600;
+}
+
+.dashboard-bank-bar {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.dashboard-bank-fill {
+  height: 100%;
+  background: var(--gradient-gold);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
 /* ==================== ADMIN ==================== */
 .admin-section {
   background: rgba(212, 168, 67, 0.04);

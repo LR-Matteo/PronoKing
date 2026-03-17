@@ -120,7 +120,9 @@ export default function TournamentPage() {
             {tournament.is_locked && <Badge color="red">Verrouillé</Badge>}
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)', fontSize: 13 }}>
               <TokenCoin size={18} />
-              {tournament.tokens_per_match} jetons/match
+              {tournament.token_mode === 'bank'
+                ? `${tournament.token_bank} jetons (banque)`
+                : `${tournament.tokens_per_match} jetons/match`}
             </div>
           </div>
         </div>
@@ -130,11 +132,11 @@ export default function TournamentPage() {
       <PlayerDashboard
         userId={user.id}
         tournamentId={id}
+        tournament={tournament}
         matches={matches}
         members={members}
         profiles={profiles}
         bets={bets}
-        tokensPerMatch={tournament.tokens_per_match}
       />
 
       {/* Leaderboard */}

@@ -34,6 +34,7 @@ export function AuthProvider({ children }) {
     await updateProfile(user.id, updates);
     setUser(updated);
     localStorage.setItem('pronoking_user', JSON.stringify(updated));
+    window.dispatchEvent(new CustomEvent('pronoking:profile-updated', { detail: { id: user.id, updates } }));
   }, [user]);
 
   const logout = useCallback(() => {

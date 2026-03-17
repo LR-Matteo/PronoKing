@@ -89,9 +89,25 @@ export function useTournamentData(tournamentId) {
     matchIdsRef.current = m.map((x) => x.id);
   }, [tournamentId]);
 
+  const silentReloadProfiles = useCallback(async () => {
+    const p = await fetchProfiles();
+    setProfiles(p);
+  }, []);
+
   useEffect(() => {
     if (tournamentId) load();
   }, [tournamentId, load]);
+
+  // Écoute les mises à jour de profil (avatar, etc.) déclenchées depuis ProfileModal
+  useEffect(() => {
+    const handler = (e) => {
+      setProfiles((prev) =>
+        prev.map((p) => (p.id === e.detail.id ? { ...p, ...e.detail.updates } : p))
+      );
+    };
+    window.addEventListener('pronoking:profile-updated', handler);
+    return () => window.removeEventListener('pronoking:profile-updated', handler);
+  }, []);
 
   // ==================== SUPABASE REALTIME ====================
   useEffect(() => {
@@ -147,6 +163,19 @@ export function useTournamentData(tournamentId) {
         { event: 'INSERT', schema: 'public', table: 'tournament_members', filter: `tournament_id=eq.${tournamentId}` },
         (payload) => {
           if (payload.new) setMembers((prev) => [...prev, payload.new]);
+        }
+      )
+
+      // Avatar ou profil mis à jour
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles' },
+        (payload) => {
+          if (payload.new) {
+            setProfiles((prev) =>
+              prev.map((p) => (p.id === payload.new.id ? { ...p, ...payload.new } : p))
+            );
+          }
         }
       )
 

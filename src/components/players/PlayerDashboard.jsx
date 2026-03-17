@@ -7,13 +7,21 @@ import { TokenCoin } from '@/components/ui/Components';
 export default function PlayerDashboard({
   userId,
   tournamentId,
+  tournament,
   matches,
   members,
   profiles,
   bets,
-  tokensPerMatch,
 }) {
   const navigate = useNavigate();
+
+  const isBankMode = tournament?.token_mode === 'bank';
+  const tokenBank = tournament?.token_bank || 0;
+  const myTotalTokensSpent = useMemo(
+    () => bets.filter((b) => b.user_id === userId).reduce((s, b) => s + (parseInt(b.tokens) || 0), 0),
+    [bets, userId]
+  );
+  const bankRemaining = tokenBank - myTotalTokensSpent;
 
   const { myRank, myPoints, upcomingUnbet, nextUnbet } = useMemo(() => {
     // Classement
@@ -52,7 +60,8 @@ export default function PlayerDashboard({
   };
 
   const totalUpcoming = matches.filter((m) => !m.is_finished && isMatchUpcoming(m.kickoff)).length;
-  const totalBudgetLeft = upcomingUnbet.length * tokensPerMatch;
+  const tokensPerMatch = tournament?.tokens_per_match || 0;
+  const totalBudgetLeft = isBankMode ? bankRemaining : upcomingUnbet.length * tokensPerMatch;
 
   return (
     <div className="player-dashboard">
@@ -83,6 +92,26 @@ export default function PlayerDashboard({
           <span className="dashboard-stat-label">Paris posés</span>
         </div>
       </div>
+
+      {/* Jauge banque (mode banque uniquement) */}
+      {isBankMode && (
+        <div className="dashboard-bank">
+          <div className="dashboard-bank-header">
+            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <TokenCoin size={14} /> Ma banque
+            </span>
+            <span className={bankRemaining <= tokenBank * 0.2 ? 'dashboard-bank-low' : ''}>
+              {bankRemaining} / {tokenBank} jetons
+            </span>
+          </div>
+          <div className="dashboard-bank-bar">
+            <div
+              className="dashboard-bank-fill"
+              style={{ width: `${Math.max(0, (bankRemaining / tokenBank) * 100)}%` }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Alerte prochain match sans pari */}
       {nextUnbet && (
