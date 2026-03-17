@@ -40,7 +40,9 @@ export default function JoinTournamentModal({ open, tournament, memberCount, onC
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)', fontSize: 13 }}>
           <TokenCoin size={14} />
-          {tournament.tokens_per_match} jetons / match
+          {tournament.token_mode === 'bank'
+            ? `${tournament.token_bank} jetons (banque unique)`
+            : `${tournament.tokens_per_match} jetons / match`}
         </div>
         {tournament.is_private && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--text-muted)', fontSize: 13 }}>

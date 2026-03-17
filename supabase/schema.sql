@@ -10,6 +10,9 @@
 --
 -- ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS max_members INTEGER DEFAULT NULL;
 -- ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS is_locked BOOLEAN DEFAULT false;
+-- ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS token_mode TEXT DEFAULT 'per_match';
+-- ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS token_bank INTEGER DEFAULT NULL;
+-- ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS max_tokens_per_match INTEGER DEFAULT NULL;
 --
 -- ==================== OPTION B : RESET COMPLET ====================
 -- ⚠️  Supprime TOUTES les données. À n'utiliser que sur une base vierge ou en dev.
@@ -40,6 +43,9 @@ CREATE TABLE tournaments (
   is_private BOOLEAN DEFAULT false,
   password TEXT,
   tokens_per_match INTEGER DEFAULT 10,
+  token_mode TEXT DEFAULT 'per_match',
+  token_bank INTEGER DEFAULT NULL,
+  max_tokens_per_match INTEGER DEFAULT NULL,
   max_members INTEGER DEFAULT NULL,
   is_locked BOOLEAN DEFAULT false,
   admin_id UUID REFERENCES profiles(id),

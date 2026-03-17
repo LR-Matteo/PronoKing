@@ -12,6 +12,7 @@ export default function BettingPanel({
   markets,
   marketOptions,
   bets,
+  allTournamentBets,
   onBetsUpdated,
 }) {
   const { user } = useAuth();
@@ -20,7 +21,9 @@ export default function BettingPanel({
   const [msg, setMsg] = useState({ text: '', type: 'error' });
 
   const canBet = match && !match.is_finished && isMatchUpcoming(match.kickoff);
-  const tokensPerMatch = tournament?.tokens_per_match || 10;
+
+  const tokenMode = tournament?.token_mode || 'per_match';
+  const isBankMode = tokenMode === 'bank';
 
   useEffect(() => {
     const existing = {};
@@ -31,7 +34,25 @@ export default function BettingPanel({
   }, [bets, user.id]);
 
   const totalUsed = Object.values(myBets).reduce((s, v) => s + (parseInt(v) || 0), 0);
-  const tokensLeft = tokensPerMatch - totalUsed;
+
+  // Budget calculation
+  let budget;
+  let budgetLabel;
+  if (isBankMode) {
+    const tokenBank = tournament?.token_bank || 0;
+    const tokensOnOtherMatches = (allTournamentBets || [])
+      .filter((b) => b.user_id === user.id && b.match_id !== match.id)
+      .reduce((s, b) => s + (parseInt(b.tokens) || 0), 0);
+    const remaining = tokenBank - tokensOnOtherMatches;
+    const cap = tournament?.max_tokens_per_match;
+    budget = cap ? Math.min(remaining, cap) : remaining;
+    budgetLabel = `Banque restante : ${tokenBank - tokensOnOtherMatches - totalUsed} / ${tokenBank}${cap ? ` (plafond ${cap}/match)` : ''}`;
+  } else {
+    budget = tournament?.tokens_per_match || 10;
+    budgetLabel = null;
+  }
+
+  const tokensLeft = budget - totalUsed;
 
   // Clic sur une option : sélectionner (1 jeton) ou désélectionner
   const handleSelect = (optId, marketId) => {
@@ -111,11 +132,16 @@ export default function BettingPanel({
       {canBet && (
         <div className="tokens-summary" style={{ marginBottom: 20 }}>
           <div>
-            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>Jetons restants</span>
+            <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+              {isBankMode ? 'Jetons disponibles' : 'Jetons restants'}
+            </span>
             <div className={`tokens-remaining ${tokensLeft < 0 ? 'over' : ''}`}>
               <TokenCoin size={18} />
-              <span style={{ marginLeft: 6 }}>{tokensLeft} / {tokensPerMatch}</span>
+              <span style={{ marginLeft: 6 }}>{tokensLeft} / {budget}</span>
             </div>
+            {isBankMode && budgetLabel && (
+              <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>{budgetLabel}</div>
+            )}
           </div>
           <Button variant="gold" onClick={saveBets} disabled={saving || tokensLeft < 0}>
             {saving ? '...' : hasExistingBets ? 'Modifier mes paris' : 'Valider mes paris'}

@@ -27,7 +27,9 @@ export default function TournamentCard({ tournament, memberCount, isMember, isAd
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <TokenCoin size={16} />
           <span style={{ color: 'var(--text-muted)', fontSize: 13 }}>
-            {tournament.tokens_per_match} / match
+            {tournament.token_mode === 'bank'
+              ? `${tournament.token_bank} jetons (banque)`
+              : `${tournament.tokens_per_match} / match`}
           </span>
         </div>
       </div>

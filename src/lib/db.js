@@ -125,6 +125,13 @@ export async function fetchUserBets(matchId, userId) {
   return data || [];
 }
 
+export async function fetchBetsByUser(userId, matchIds) {
+  if (!matchIds || matchIds.length === 0) return [];
+  const { data, error } = await db.from('bets').select('*').eq('user_id', userId).in('match_id', matchIds);
+  if (error) throw error;
+  return data || [];
+}
+
 export async function createBet(bet) {
   const { data, error } = await db.from('bets').insert(bet);
   if (error) throw error;

@@ -9,8 +9,14 @@ export default function CreateTournamentModal({ open, onClose, onCreated }) {
   const [description, setDescription] = useState('');
   const [isPrivate, setIsPrivate] = useState(false);
   const [password, setPassword] = useState('');
-  const [tokensPerMatch, setTokensPerMatch] = useState(10);
   const [maxMembers, setMaxMembers] = useState('');
+
+  // Token system
+  const [tokenMode, setTokenMode] = useState('per_match');
+  const [tokensPerMatch, setTokensPerMatch] = useState(10);
+  const [tokenBank, setTokenBank] = useState(100);
+  const [maxTokensPerMatch, setMaxTokensPerMatch] = useState('');
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -21,6 +27,18 @@ export default function CreateTournamentModal({ open, onClose, onCreated }) {
       setError('Le nombre max de participants doit être au moins 2');
       return;
     }
+    if (tokenMode === 'per_match' && (!tokensPerMatch || tokensPerMatch < 1)) {
+      setError('Le nombre de jetons par match doit être au moins 1');
+      return;
+    }
+    if (tokenMode === 'bank' && (!tokenBank || tokenBank < 1)) {
+      setError('La banque de jetons doit être au moins 1');
+      return;
+    }
+    if (tokenMode === 'bank' && maxTokensPerMatch !== '' && (isNaN(maxTokensPerMatch) || parseInt(maxTokensPerMatch) < 1)) {
+      setError('Le plafond par match doit être au moins 1');
+      return;
+    }
 
     setLoading(true);
     try {
@@ -29,7 +47,10 @@ export default function CreateTournamentModal({ open, onClose, onCreated }) {
         description: description.trim() || null,
         is_private: isPrivate,
         password: isPrivate ? password : null,
-        tokens_per_match: tokensPerMatch,
+        token_mode: tokenMode,
+        tokens_per_match: tokenMode === 'per_match' ? tokensPerMatch : null,
+        token_bank: tokenMode === 'bank' ? tokenBank : null,
+        max_tokens_per_match: tokenMode === 'bank' && maxTokensPerMatch !== '' ? parseInt(maxTokensPerMatch) : null,
         max_members: maxMembers !== '' ? parseInt(maxMembers) : null,
         is_locked: false,
         admin_id: user.id,
@@ -47,8 +68,11 @@ export default function CreateTournamentModal({ open, onClose, onCreated }) {
     setDescription('');
     setIsPrivate(false);
     setPassword('');
-    setTokensPerMatch(10);
     setMaxMembers('');
+    setTokenMode('per_match');
+    setTokensPerMatch(10);
+    setTokenBank(100);
+    setMaxTokensPerMatch('');
     setError('');
     onClose();
   };
@@ -67,17 +91,70 @@ export default function CreateTournamentModal({ open, onClose, onCreated }) {
         <input className="input-field" value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Décrivez votre tournoi..." />
       </div>
 
+      {/* Token mode selector */}
       <div className="input-group">
-        <label>Jetons par match</label>
-        <input
-          className="input-field"
-          type="number"
-          min="1"
-          max="100"
-          value={tokensPerMatch}
-          onChange={(e) => setTokensPerMatch(parseInt(e.target.value) || 10)}
-        />
+        <label>Système de jetons</label>
+        <div className="token-mode-toggle">
+          <button
+            type="button"
+            className={`token-mode-btn ${tokenMode === 'per_match' ? 'active' : ''}`}
+            onClick={() => setTokenMode('per_match')}
+          >
+            Par match
+          </button>
+          <button
+            type="button"
+            className={`token-mode-btn ${tokenMode === 'bank' ? 'active' : ''}`}
+            onClick={() => setTokenMode('bank')}
+          >
+            Banque unique
+          </button>
+        </div>
+        <p className="input-hint">
+          {tokenMode === 'per_match'
+            ? 'Chaque joueur reçoit un budget fixe de jetons à chaque match (renouvelable).'
+            : 'Chaque joueur dispose d\'une banque unique pour tout le tournoi (non renouvelable).'}
+        </p>
       </div>
+
+      {tokenMode === 'per_match' ? (
+        <div className="input-group">
+          <label>Jetons par match</label>
+          <input
+            className="input-field"
+            type="number"
+            min="1"
+            max="100"
+            value={tokensPerMatch}
+            onChange={(e) => setTokensPerMatch(parseInt(e.target.value) || 10)}
+          />
+        </div>
+      ) : (
+        <>
+          <div className="input-group">
+            <label>Banque initiale de jetons</label>
+            <input
+              className="input-field"
+              type="number"
+              min="1"
+              value={tokenBank}
+              onChange={(e) => setTokenBank(parseInt(e.target.value) || 100)}
+            />
+          </div>
+          <div className="input-group">
+            <label>Plafond de jetons par match (optionnel)</label>
+            <input
+              className="input-field"
+              type="number"
+              min="1"
+              value={maxTokensPerMatch}
+              onChange={(e) => setMaxTokensPerMatch(e.target.value)}
+              placeholder="Illimité"
+            />
+            <p className="input-hint">Limite les all-in sur un seul match.</p>
+          </div>
+        </>
+      )}
 
       <div className="input-group">
         <label>Nombre max de participants (optionnel)</label>
