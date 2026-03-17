@@ -19,7 +19,17 @@ if (!inputs.length) {
   process.exit(1);
 }
 
-const teams = [];
+// Charger les équipes existantes depuis teams.json
+const outPath = path.resolve('src/data/teams.json');
+let teams = [];
+if (fs.existsSync(outPath)) {
+  try {
+    teams = JSON.parse(fs.readFileSync(outPath, 'utf8'));
+    console.log(`  📂 ${teams.length} équipes existantes chargées depuis teams.json`);
+  } catch {
+    teams = [];
+  }
+}
 
 for (const filePath of inputs) {
   const abs = path.resolve(filePath);
@@ -61,7 +71,6 @@ const unique = teams.filter((t) => {
   return true;
 }).sort((a, b) => a.name.localeCompare(b.name));
 
-const outPath = path.resolve('src/data/teams.json');
 fs.mkdirSync(path.dirname(outPath), { recursive: true });
 fs.writeFileSync(outPath, JSON.stringify(unique, null, 2), 'utf8');
 
