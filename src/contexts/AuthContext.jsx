@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useCallback } from 'react';
-import { findProfileByUsername, createProfile, loginProfile } from '@/lib/db';
+import { findProfileByUsername, createProfile, loginProfile, updateProfile } from '@/lib/db';
 
 const AuthContext = createContext(null);
 
@@ -29,13 +29,20 @@ export function AuthProvider({ children }) {
     return profile;
   }, []);
 
+  const updateUser = useCallback(async (updates) => {
+    const updated = { ...user, ...updates };
+    await updateProfile(user.id, updates);
+    setUser(updated);
+    localStorage.setItem('pronoking_user', JSON.stringify(updated));
+  }, [user]);
+
   const logout = useCallback(() => {
     setUser(null);
     localStorage.removeItem('pronoking_user');
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

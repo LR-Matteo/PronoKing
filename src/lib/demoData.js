@@ -28,9 +28,9 @@ const now = Date.now();
 
 const store = {
   profiles: [
-    { id: adminId, username: 'admin', password_hash: 'admin123', created_at: new Date().toISOString() },
-    { id: userId1, username: 'marco', password_hash: 'pass123', created_at: new Date().toISOString() },
-    { id: userId2, username: 'lucas', password_hash: 'pass123', created_at: new Date().toISOString() },
+    { id: adminId, username: 'admin', password_hash: 'admin123', avatar: '👑', created_at: new Date().toISOString() },
+    { id: userId1, username: 'marco', password_hash: 'pass123', avatar: '🦁', created_at: new Date().toISOString() },
+    { id: userId2, username: 'lucas', password_hash: 'pass123', avatar: '🚀', created_at: new Date().toISOString() },
   ],
   tournaments: [
     {

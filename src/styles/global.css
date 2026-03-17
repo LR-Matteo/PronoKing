@@ -127,9 +127,21 @@ h1, h2, h3, h4, h5 {
   font-size: 14px;
 }
 
-.nav-user-avatar {
-  width: 32px;
-  height: 32px;
+.nav-user-clickable {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.15s;
+}
+
+.nav-user-clickable:hover {
+  background: var(--surface-2);
+}
+
+/* UserAvatar component */
+.user-avatar {
   border-radius: 50%;
   background: var(--gradient-gold);
   display: flex;
@@ -137,8 +149,42 @@ h1, h2, h3, h4, h5 {
   justify-content: center;
   font-family: 'Oswald', sans-serif;
   font-weight: 600;
-  font-size: 14px;
   color: var(--bg-primary);
+  flex-shrink: 0;
+  line-height: 1;
+  user-select: none;
+}
+
+/* ProfileModal — avatar picker */
+.avatar-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.avatar-picker-item {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: var(--surface-2);
+  cursor: pointer;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, transform 0.1s;
+  line-height: 1;
+}
+
+.avatar-picker-item:hover {
+  border-color: var(--border);
+  transform: scale(1.1);
+}
+
+.avatar-picker-item.active {
+  border-color: var(--accent-gold);
+  background: color-mix(in srgb, var(--accent-gold) 15%, transparent);
+  transform: scale(1.1);
 }
 
 /* Indicateur Realtime */

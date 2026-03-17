@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft } from 'lucide-react';
 import { fetchProfile, fetchMatches, fetchBets, fetchMarkets, fetchMarketOptions } from '@/lib/db';
 import { Button, PageTransition, EmptyState } from '@/components/ui/Components';
+import UserAvatar from '@/components/ui/UserAvatar';
 
 export default function PlayerPage() {
   const { tournamentId, playerId } = useParams();
@@ -73,14 +74,8 @@ export default function PlayerPage() {
 
       {/* Player header */}
       <div className="card" style={{ marginBottom: 24, textAlign: 'center' }}>
-        <div style={{
-          width: 64, height: 64, borderRadius: '50%',
-          background: 'var(--gradient-gold)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontFamily: 'Oswald', fontWeight: 700, fontSize: 28,
-          color: 'var(--bg-primary)', margin: '0 auto 12px',
-        }}>
-          {player.username[0].toUpperCase()}
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+          <UserAvatar user={player} size={72} />
         </div>
         <h2 style={{ fontSize: 24 }}>{player.username}</h2>
 

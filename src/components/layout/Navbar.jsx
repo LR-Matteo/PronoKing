@@ -4,16 +4,18 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Components';
 import { DEMO_MODE, supabase } from '@/lib/supabase';
+import UserAvatar from '@/components/ui/UserAvatar';
+import ProfileModal from '@/components/profile/ProfileModal';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [connected, setConnected] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
 
   useEffect(() => {
     if (DEMO_MODE) return;
 
-    // Surveille l'état de la connexion Realtime
     const channel = supabase.channel('connection-check')
       .subscribe((status) => {
         setConnected(status === 'SUBSCRIBED');
@@ -49,18 +51,22 @@ export default function Navbar() {
                 <span className="realtime-label">{connected ? 'Live' : '...'}</span>
               </div>
             )}
-            <div className="nav-user">
-              <div className="nav-user-avatar">
-                {user.username[0].toUpperCase()}
-              </div>
+            <button
+              className="nav-user nav-user-clickable"
+              onClick={() => setShowProfile(true)}
+              title="Mon profil"
+            >
+              <UserAvatar user={user} size={32} />
               <span>{user.username}</span>
-            </div>
+            </button>
             <Button variant="ghost" onClick={handleLogout} title="Déconnexion">
               <LogOut size={18} />
             </Button>
           </div>
         )}
       </nav>
+
+      <ProfileModal open={showProfile} onClose={() => setShowProfile(false)} />
     </>
   );
 }

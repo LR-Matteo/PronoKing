@@ -13,6 +13,7 @@
 -- ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS token_mode TEXT DEFAULT 'per_match';
 -- ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS token_bank INTEGER DEFAULT NULL;
 -- ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS max_tokens_per_match INTEGER DEFAULT NULL;
+-- ALTER TABLE profiles ADD COLUMN IF NOT EXISTS avatar TEXT DEFAULT NULL;
 --
 -- ==================== OPTION B : RESET COMPLET ====================
 -- ⚠️  Supprime TOUTES les données. À n'utiliser que sur une base vierge ou en dev.
@@ -32,6 +33,7 @@ CREATE TABLE profiles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   username TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
+  avatar TEXT DEFAULT NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 );
 

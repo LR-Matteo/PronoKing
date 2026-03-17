@@ -168,6 +168,12 @@ export async function findProfileByUsername(username) {
   return data && data.length > 0 ? data[0] : null;
 }
 
+export async function updateProfile(id, updates) {
+  const { data, error } = await db.from('profiles').update(updates).eq('id', id);
+  if (error) throw error;
+  return data;
+}
+
 export async function createProfile(profile) {
   const { data, error } = await db.from('profiles').insert(profile).select().single();
   if (error) throw error;
