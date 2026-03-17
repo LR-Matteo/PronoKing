@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Trophy } from 'lucide-react';
 import { classNames } from '@/lib/utils';
+import UserAvatar from '@/components/ui/UserAvatar';
 
 export default function Leaderboard({ members, profiles, bets, tournamentId }) {
   const navigate = useNavigate();
@@ -13,7 +14,7 @@ export default function Leaderboard({ members, profiles, bets, tournamentId }) {
         const points = bets
           .filter((b) => b.user_id === m.user_id)
           .reduce((sum, b) => sum + (parseFloat(b.points_won) || 0), 0);
-        return { userId: m.user_id, username: profile?.username || '?', points };
+        return { userId: m.user_id, username: profile?.username || '?', avatar: profile?.avatar || null, points };
       })
       .sort((a, b) => b.points - a.points);
   }, [members, profiles, bets]);
@@ -43,6 +44,7 @@ export default function Leaderboard({ members, profiles, bets, tournamentId }) {
             <div className={classNames('leaderboard-rank', rankClass(i))}>
               {i + 1}
             </div>
+            <UserAvatar user={{ username: r.username, avatar: r.avatar }} size={30} />
             <span className="leaderboard-name">{r.username}</span>
             <span className="leaderboard-points">
               {r.points.toFixed(1)}
