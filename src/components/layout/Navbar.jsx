@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { LogOut } from 'lucide-react';
+import { LogOut, BarChart2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Components';
@@ -59,6 +59,9 @@ export default function Navbar() {
               <UserAvatar user={user} size={32} />
               <span>{user.username}</span>
             </button>
+            <Button variant="ghost" onClick={() => navigate('/stats')} title="Mes statistiques">
+              <BarChart2 size={18} />
+            </Button>
             <Button variant="ghost" onClick={handleLogout} title="Déconnexion">
               <LogOut size={18} />
             </Button>

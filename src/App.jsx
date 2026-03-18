@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import JoinPage from './pages/JoinPage';
+import StatsPage from './pages/StatsPage';
 import TournamentsPage from './pages/TournamentsPage';
 import TournamentPage from './pages/TournamentPage';
 import MatchPage from './pages/MatchPage';
@@ -46,6 +47,17 @@ export default function App() {
         />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/join/:id" element={<JoinPage />} />
+        <Route
+          path="/stats"
+          element={
+            <ProtectedRoute>
+              <Navbar />
+              <div className="container">
+                <StatsPage />
+              </div>
+            </ProtectedRoute>
+          }
+        />
 
         {/* Protected */}
         <Route
