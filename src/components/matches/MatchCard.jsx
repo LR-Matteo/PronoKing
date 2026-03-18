@@ -3,12 +3,10 @@ import { Badge, TokenCoin } from '@/components/ui/Components';
 import TeamLogo from '@/components/ui/TeamLogo';
 import { formatDateShort, isMatchStarted, isMatchUpcoming } from '@/lib/utils';
 
-export default function MatchCard({ match, userId, bets, markets, onClick }) {
-  const userBets = bets.filter((b) => b.user_id === userId && b.match_id === match.id);
+export default function MatchCard({ match, userBets = [], matchMarkets = [], onClick }) {
   const hasBet = userBets.length > 0;
   const totalTokens = userBets.reduce((s, b) => s + b.tokens, 0);
   const totalPoints = userBets.reduce((s, b) => s + (parseFloat(b.points_won) || 0), 0);
-  const matchMarkets = markets.filter((m) => m.match_id === match.id);
 
   return (
     <div className="match-card card-hover" style={{ cursor: 'pointer' }} onClick={onClick}>

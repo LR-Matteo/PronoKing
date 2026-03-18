@@ -30,29 +30,20 @@ async function loadStatsData(userId) {
 
   const matchIds = [...new Set(bets.map((b) => b.match_id))];
 
-  let matches = [];
-  if (!DEMO_MODE) {
-    const { data } = await supabase.from('matches').select('*').in('id', matchIds);
-    matches = data || [];
-  }
+  // Tout en parallèle : matches + markets + tournois
+  const [matchesResult, markets, tournaments] = await Promise.all([
+    DEMO_MODE ? Promise.resolve({ data: [] }) : supabase.from('matches').select('*').in('id', matchIds),
+    fetchMarketsByMatches(matchIds),
+    fetchTournaments(),
+  ]);
 
-  const markets = await fetchMarketsByMatches(matchIds);
+  const matches = matchesResult.data || [];
   const marketIds = markets.map((m) => m.id);
   const options = await fetchMarketOptionsByMarkets(marketIds);
 
-  const betOptionIds = [...new Set(bets.map((b) => b.market_option_id))];
-  const missingOptionIds = betOptionIds.filter((id) => !options.some((o) => o.id === id));
-  let extraOptions = [];
-  if (missingOptionIds.length > 0 && !DEMO_MODE) {
-    const { data } = await supabase.from('market_options').select('*').in('id', missingOptionIds);
-    extraOptions = data || [];
-  }
-
-  const tournaments = await fetchTournaments();
-
   return {
     bets,
-    optionMap: new Map([...options, ...extraOptions].map((o) => [o.id, o])),
+    optionMap: new Map(options.map((o) => [o.id, o])),
     marketMap: new Map(markets.map((m) => [m.id, m])),
     matchMap: new Map(matches.map((m) => [m.id, m])),
     tournamentMap: new Map(tournaments.map((t) => [t.id, t.name])),

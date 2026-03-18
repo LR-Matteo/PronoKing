@@ -4,7 +4,7 @@ import { ChevronLeft, Plus, Check, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useMatchData } from '@/hooks/useMatchData';
-import { fetchMatches, fetchBetsByUser, fetchBetsByMatches } from '@/lib/db';
+import { fetchBetsByUser } from '@/lib/db';
 import { isMatchStarted, isMatchUpcoming, formatDate } from '@/lib/utils';
 import { Button, Badge, PageTransition, EmptyState } from '@/components/ui/Components';
 import TeamLogo from '@/components/ui/TeamLogo';
@@ -16,20 +16,20 @@ export default function MatchPage() {
   const { tournamentId, matchId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { match, tournament, markets, marketOptions, bets, loading, reload } = useMatchData(matchId, tournamentId);
+  const { match, tournament, markets, marketOptions, bets, tournamentMatchIds, loading, reload } = useMatchData(matchId, tournamentId);
   const { addToast } = useToast();
   const [showAddMarket, setShowAddMarket] = useState(false);
   const [showValidate, setShowValidate] = useState(false);
   const [allTournamentBets, setAllTournamentBets] = useState([]);
 
-  // In bank mode, load all user bets across the tournament for budget calculation
+  // Mode banque : charger les paris de l'utilisateur sur le tournoi pour le calcul du budget
+  // tournamentMatchIds est déjà disponible depuis useMatchData (pas de requête supplémentaire)
   useEffect(() => {
-    if (!tournament || !user || tournament.token_mode !== 'bank') return;
-    fetchMatches(tournament.id)
-      .then((ms) => fetchBetsByUser(user.id, ms.map((m) => m.id)))
+    if (!tournament || !user || tournament.token_mode !== 'bank' || !tournamentMatchIds.length) return;
+    fetchBetsByUser(user.id, tournamentMatchIds)
       .then(setAllTournamentBets)
       .catch(() => {});
-  }, [tournament?.id, user?.id]);
+  }, [tournamentMatchIds, user?.id, tournament?.token_mode]);
 
   // Notification quand le match passe à "terminé"
   const prevFinishedRef = useRef(null);
@@ -133,11 +133,8 @@ export default function MatchPage() {
           allTournamentBets={allTournamentBets}
           onBetsUpdated={() => {
             reload();
-            if (tournament?.token_mode === 'bank') {
-              fetchMatches(tournament.id)
-                .then((ms) => fetchBetsByUser(user.id, ms.map((m) => m.id)))
-                .then(setAllTournamentBets)
-                .catch(() => {});
+            if (tournament?.token_mode === 'bank' && tournamentMatchIds.length) {
+              fetchBetsByUser(user.id, tournamentMatchIds).then(setAllTournamentBets).catch(() => {});
             }
           }}
         />

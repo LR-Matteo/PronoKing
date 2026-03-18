@@ -75,6 +75,26 @@ export default function TournamentPage() {
     [matches]
   );
 
+  // Index pré-calculés pour éviter O(n) filter dans chaque MatchCard
+  const userBetsByMatch = useMemo(() => {
+    const map = new Map();
+    for (const b of bets) {
+      if (b.user_id !== user?.id) continue;
+      if (!map.has(b.match_id)) map.set(b.match_id, []);
+      map.get(b.match_id).push(b);
+    }
+    return map;
+  }, [bets, user?.id]);
+
+  const marketsByMatch = useMemo(() => {
+    const map = new Map();
+    for (const m of markets) {
+      if (!map.has(m.match_id)) map.set(m.match_id, []);
+      map.get(m.match_id).push(m);
+    }
+    return map;
+  }, [markets]);
+
   if (loading) return <EmptyState description="Chargement..." />;
   if (!tournament) return <EmptyState description="Tournoi introuvable" />;
 
@@ -235,9 +255,8 @@ export default function TournamentPage() {
                 <MatchCard
                   key={m.id}
                   match={m}
-                  userId={user.id}
-                  bets={bets}
-                  markets={markets}
+                  userBets={userBetsByMatch.get(m.id) || []}
+                  matchMarkets={marketsByMatch.get(m.id) || []}
                   onClick={() => navigate(`/tournament/${id}/match/${m.id}`)}
                 />
               ))

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { fetchMatch, fetchTournament, fetchMarkets, fetchMarketOptionsByMarkets, fetchBets } from '@/lib/db';
+import { fetchMatch, fetchTournament, fetchMarkets, fetchMarketOptionsByMarkets, fetchBets, fetchMatches } from '@/lib/db';
 import { supabase, DEMO_MODE } from '@/lib/supabase';
 
 export function useMatchData(matchId, tournamentId) {
@@ -13,14 +13,18 @@ export function useMatchData(matchId, tournamentId) {
   // Ref pour les IDs de marchés (évite les closures périmées)
   const marketIdsRef = useRef([]);
 
+  const [tournamentMatchIds, setTournamentMatchIds] = useState([]);
+
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const [m, t, mk, b] = await Promise.all([
+      // Tout en parallèle, y compris les matchs du tournoi pour le mode banque
+      const [m, t, mk, b, tourneyMatches] = await Promise.all([
         fetchMatch(matchId),
         fetchTournament(tournamentId),
         fetchMarkets(matchId),
         fetchBets(matchId),
+        fetchMatches(tournamentId),
       ]);
 
       const marketIds = (mk || []).map((market) => market.id);
@@ -33,6 +37,7 @@ export function useMatchData(matchId, tournamentId) {
       setMarkets(mk);
       setMarketOptions(allOpts);
       setBets(b);
+      setTournamentMatchIds(tourneyMatches.map((tm) => tm.id));
     } finally {
       setLoading(false);
     }
@@ -100,5 +105,5 @@ export function useMatchData(matchId, tournamentId) {
     };
   }, [matchId]);
 
-  return { match, tournament, markets, marketOptions, bets, loading, reload: load };
+  return { match, tournament, markets, marketOptions, bets, tournamentMatchIds, loading, reload: load };
 }

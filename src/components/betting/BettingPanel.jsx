@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Check, Minus, Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { deleteBet, createBet } from '@/lib/db';
@@ -87,7 +87,16 @@ export default function BettingPanel({
     });
   };
 
-  const hasExistingBets = bets.some((b) => b.user_id === user.id);
+  // Map O(1) pour lookup rapide du pari utilisateur par option
+  const userBetMap = useMemo(() => {
+    const map = new Map();
+    for (const b of bets) {
+      if (b.user_id === user.id) map.set(b.market_option_id, b);
+    }
+    return map;
+  }, [bets, user.id]);
+
+  const hasExistingBets = userBetMap.size > 0;
 
   const saveBets = async () => {
     if (tokensLeft < 0) {
@@ -98,19 +107,19 @@ export default function BettingPanel({
     setSaving(true);
     try {
       const oldBets = bets.filter((b) => b.user_id === user.id);
-      for (const ob of oldBets) await deleteBet(ob.id);
-
-      for (const [optId, tokens] of Object.entries(myBets)) {
-        if (tokens > 0) {
-          await createBet({
+      // Suppressions et créations en parallèle
+      await Promise.all(oldBets.map((ob) => deleteBet(ob.id)));
+      await Promise.all(
+        Object.entries(myBets)
+          .filter(([, tokens]) => tokens > 0)
+          .map(([optId, tokens]) => createBet({
             user_id: user.id,
             match_id: match.id,
             market_option_id: optId,
             tokens: parseInt(tokens),
             points_won: 0,
-          });
-        }
-      }
+          }))
+      );
 
       setMsg({ text: 'Paris enregistrés !', type: 'success' });
       onBetsUpdated();
@@ -162,7 +171,7 @@ export default function BettingPanel({
               const myTokens = myBets[opt.id] || 0;
               const isSelected = myTokens > 0;
               const isWinner = opt.is_winner;
-              const userBetOnThis = bets.find((b) => b.user_id === user.id && b.market_option_id === opt.id);
+              const userBetOnThis = userBetMap.get(opt.id);
 
               let optClass = '';
               if (match.is_finished) {
