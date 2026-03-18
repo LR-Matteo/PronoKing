@@ -5,50 +5,67 @@ import { hashPassword, verifyPassword } from '@/lib/crypto';
 
 const AuthContext = createContext(null);
 
+const CACHE_KEY = 'pronoking_profile';
+
+function readCache() {
+  try { return JSON.parse(localStorage.getItem(CACHE_KEY)); } catch { return null; }
+}
+function writeCache(profile) {
+  if (profile) localStorage.setItem(CACHE_KEY, JSON.stringify(profile));
+  else localStorage.removeItem(CACHE_KEY);
+}
+
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  // Lecture synchrone du cache → pas d'écran de chargement si l'utilisateur est connu
+  const cached = DEMO_MODE
+    ? (() => { try { return JSON.parse(localStorage.getItem('pronoking_user')); } catch { return null; } })()
+    : readCache();
+
+  const [user, setUser] = useState(cached);
+  // loading = true seulement si Supabase ET aucun cache (premier lancement)
+  const [loading, setLoading] = useState(!DEMO_MODE && !cached);
 
   useEffect(() => {
-    if (DEMO_MODE) {
-      try {
-        const stored = JSON.parse(localStorage.getItem('pronoking_user'));
-        setUser(stored);
-      } catch {}
-      setLoading(false);
-      return;
-    }
+    if (DEMO_MODE) return; // demo : tout est synchrone, rien à faire
 
-    // Timeout de sécurité — si getSession n'a pas répondu après 5s, on débloque
+    // Vérification de session en arrière-plan (ne bloque pas l'affichage si cache présent)
     const timeout = setTimeout(() => setLoading(false), 5000);
 
-    // Restore Supabase session on mount
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      clearTimeout(timeout);
       if (session?.user) {
         try {
           const profile = await fetchProfile(session.user.id);
-          if (profile) setUser({ ...profile, email: session.user.email });
+          if (profile) {
+            const fullUser = { ...profile, email: session.user.email };
+            setUser(fullUser);
+            writeCache(fullUser);
+          }
         } catch {}
+      } else {
+        // Session expirée ou invalide → déconnexion
+        setUser(null);
+        writeCache(null);
       }
-      clearTimeout(timeout);
       setLoading(false);
     }).catch(() => { clearTimeout(timeout); setLoading(false); });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      // INITIAL_SESSION est déjà géré par getSession() ci-dessus — on ignore
-      if (event === 'INITIAL_SESSION') return;
+      if (event === 'INITIAL_SESSION') return; // déjà géré par getSession()
       if (event === 'SIGNED_OUT') {
         setUser(null);
+        writeCache(null);
         return;
       }
       if (session?.user) {
         try {
           const profile = await fetchProfile(session.user.id);
-          // Ne jamais effacer l'utilisateur en cas d'échec du fetch
-          if (profile) setUser({ ...profile, email: session.user.email });
-        } catch {
-          // Silencieux — on garde l'état utilisateur actuel
-        }
+          if (profile) {
+            const fullUser = { ...profile, email: session.user.email };
+            setUser(fullUser);
+            writeCache(fullUser);
+          }
+        } catch {}
       }
     });
 
@@ -69,9 +86,10 @@ export function AuthProvider({ children }) {
     const { data, error } = await supabase.auth.signInWithPassword({ email: emailOrUsername, password });
     if (error) throw new Error('Email ou mot de passe incorrect');
     const profile = await fetchProfile(data.user.id);
-    if (!profile) throw new Error('Profil introuvable — contacte l\'administrateur');
+    if (!profile) throw new Error("Profil introuvable — contacte l'administrateur");
     const fullUser = { ...profile, email: data.user.email };
     setUser(fullUser);
+    writeCache(fullUser);
     return fullUser;
   }, []);
 
@@ -90,14 +108,13 @@ export function AuthProvider({ children }) {
     if (password.length < 6) throw new Error('Le mot de passe doit faire au moins 6 caractères');
     const existing = await findProfileByUsername(username);
     if (existing) throw new Error('Ce pseudo est déjà pris');
-    // Le username est passé en metadata — le trigger SQL crée le profil automatiquement
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { username } },
     });
     if (error) throw new Error(error.message);
-    // Attendre que le trigger ait créé le profil (poll jusqu'à 3s)
+    // Poll jusqu'à 3s le temps que le trigger crée le profil
     let profile = null;
     for (let i = 0; i < 6; i++) {
       await new Promise((r) => setTimeout(r, 500));
@@ -107,6 +124,7 @@ export function AuthProvider({ children }) {
     if (!profile) throw new Error('Profil introuvable après inscription — réessaie.');
     const fullUser = { ...profile, email };
     setUser(fullUser);
+    writeCache(fullUser);
     return fullUser;
   }, []);
 
@@ -118,6 +136,7 @@ export function AuthProvider({ children }) {
     }
     await supabase.auth.signOut();
     setUser(null);
+    writeCache(null);
   }, []);
 
   const updateUser = useCallback(async (updates) => {
@@ -125,6 +144,7 @@ export function AuthProvider({ children }) {
     const updated = { ...user, ...updates };
     setUser(updated);
     if (DEMO_MODE) localStorage.setItem('pronoking_user', JSON.stringify(updated));
+    else writeCache(updated);
     window.dispatchEvent(new CustomEvent('pronoking:profile-updated', { detail: { id: user.id, updates } }));
   }, [user]);
 
@@ -140,7 +160,7 @@ export function AuthProvider({ children }) {
   }, [user]);
 
   const resetPassword = useCallback(async (email) => {
-    if (DEMO_MODE) throw new Error('Non disponible en mode démo — contacte l\'admin du tournoi');
+    if (DEMO_MODE) throw new Error("Non disponible en mode démo — contacte l'admin du tournoi");
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/reset-password`,
     });
