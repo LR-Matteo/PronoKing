@@ -4,6 +4,7 @@ import Navbar from './components/layout/Navbar';
 import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import JoinPage from './pages/JoinPage';
 import TournamentsPage from './pages/TournamentsPage';
 import TournamentPage from './pages/TournamentPage';
 import MatchPage from './pages/MatchPage';
@@ -44,6 +45,7 @@ export default function App() {
           element={loading ? <AppLoader /> : user ? <Navigate to="/" replace /> : <ForgotPasswordPage />}
         />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/join/:id" element={<JoinPage />} />
 
         {/* Protected */}
         <Route

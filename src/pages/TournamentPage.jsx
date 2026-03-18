@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Plus, Settings, Lock, Unlock, Trash2, Trophy, CalendarDays } from 'lucide-react';
+import { ChevronLeft, Plus, Settings, Lock, Unlock, Trash2, Trophy, CalendarDays, Link } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useTournamentData } from '@/hooks/useTournamentData';
@@ -89,6 +89,18 @@ export default function TournamentPage() {
     matchTab === 'upcoming' ? upcomingMatches :
     matchTab === 'live' ? startedMatches :
     finishedMatches;
+
+  const [linkCopied, setLinkCopied] = useState(false);
+
+  const handleCopyInviteLink = () => {
+    const base = `${window.location.origin}/join/${id}`;
+    const url = tournament.is_private && tournament.password
+      ? `${base}?p=${btoa(tournament.password)}`
+      : base;
+    navigator.clipboard.writeText(url);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2000);
+  };
 
   const handleToggleLock = async () => {
     setAdminLoading(true);
@@ -181,6 +193,9 @@ export default function TournamentPage() {
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 <Button variant="gold" size="sm" onClick={() => setShowAddMatch(true)}>
                   <Plus size={14} /> Ajouter un match
+                </Button>
+                <Button variant="ghost" size="sm" onClick={handleCopyInviteLink}>
+                  <Link size={14} /> {linkCopied ? 'Lien copié !' : 'Lien d\'invitation'}
                 </Button>
                 <Button variant="ghost" size="sm" onClick={handleToggleLock} disabled={adminLoading}>
                   {tournament.is_locked

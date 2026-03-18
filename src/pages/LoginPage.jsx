@@ -32,7 +32,13 @@ export default function LoginPage() {
       } else {
         await login(DEMO_MODE ? username.trim() : email.trim(), password);
       }
-      navigate('/');
+      const redirect = sessionStorage.getItem('pronoking_redirect');
+      if (redirect) {
+        sessionStorage.removeItem('pronoking_redirect');
+        navigate(redirect);
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError(err.message);
     }
