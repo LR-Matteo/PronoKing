@@ -28,7 +28,7 @@ export function AuthProvider({ children }) {
         } catch {}
       }
       setLoading(false);
-    });
+    }).catch(() => setLoading(false));
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {

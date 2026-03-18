@@ -9,9 +9,19 @@ import TournamentPage from './pages/TournamentPage';
 import MatchPage from './pages/MatchPage';
 import PlayerPage from './pages/PlayerPage';
 
+function AppLoader() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+      <div style={{ fontFamily: 'Oswald', fontSize: 22, color: 'var(--accent-gold)', letterSpacing: 2 }}>
+        PRONOKING
+      </div>
+    </div>
+  );
+}
+
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return <AppLoader />;
   if (!user) return <Navigate to="/login" replace />;
   return children;
 }
@@ -27,11 +37,11 @@ export default function App() {
         {/* Public */}
         <Route
           path="/login"
-          element={loading ? null : user ? <Navigate to="/" replace /> : <LoginPage />}
+          element={loading ? <AppLoader /> : user ? <Navigate to="/" replace /> : <LoginPage />}
         />
         <Route
           path="/forgot-password"
-          element={loading ? null : user ? <Navigate to="/" replace /> : <ForgotPasswordPage />}
+          element={loading ? <AppLoader /> : user ? <Navigate to="/" replace /> : <ForgotPasswordPage />}
         />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
