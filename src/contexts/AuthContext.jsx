@@ -82,10 +82,16 @@ export function AuthProvider({ children }) {
     if (password.length < 6) throw new Error('Le mot de passe doit faire au moins 6 caractères');
     const existing = await findProfileByUsername(username);
     if (existing) throw new Error('Ce pseudo est déjà pris');
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    // Le username est passé en metadata — le trigger SQL crée le profil automatiquement
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { username } },
+    });
     if (error) throw new Error(error.message);
-    // Create profile linked to the new auth user
-    const profile = await createProfile({ id: data.user.id, username });
+    // Attendre que le trigger ait créé le profil
+    await new Promise((r) => setTimeout(r, 500));
+    const profile = await fetchProfile(data.user.id);
     const fullUser = { ...profile, email };
     setUser(fullUser);
     return fullUser;

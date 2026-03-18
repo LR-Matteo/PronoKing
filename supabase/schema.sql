@@ -113,8 +113,28 @@ ALTER TABLE bets ENABLE ROW LEVEL SECURITY;
 
 -- Profiles : lecture publique, écriture uniquement par le propriétaire
 CREATE POLICY "Public read profiles" ON profiles FOR SELECT USING (true);
-CREATE POLICY "Users insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+-- INSERT géré par le trigger handle_new_user (SECURITY DEFINER) — pas de policy INSERT directe
 CREATE POLICY "Users update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
+
+-- ==================== TRIGGER CRÉATION DE PROFIL ====================
+
+-- Fonction appelée automatiquement à chaque nouvel utilisateur auth
+-- SECURITY DEFINER = s'exécute avec les droits du owner (bypass RLS)
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS trigger AS $$
+BEGIN
+  INSERT INTO public.profiles (id, username)
+  VALUES (
+    new.id,
+    COALESCE(new.raw_user_meta_data->>'username', split_part(new.email, '@', 1))
+  );
+  RETURN new;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE PROCEDURE handle_new_user();
 
 -- Tournois
 CREATE POLICY "Public read tournaments" ON tournaments FOR SELECT USING (true);
