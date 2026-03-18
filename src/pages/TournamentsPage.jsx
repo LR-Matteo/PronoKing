@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trophy } from 'lucide-react';
+import { Plus, Trophy, Compass } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchTournaments, fetchAllMembers, joinTournament } from '@/lib/db';
 import { Button, PageTransition, EmptyState } from '@/components/ui/Components';
@@ -13,6 +13,7 @@ export default function TournamentsPage() {
   const navigate = useNavigate();
   const [tournaments, setTournaments] = useState([]);
   const [members, setMembers] = useState([]);
+  const [tab, setTab] = useState('mine');
   const [showCreate, setShowCreate] = useState(false);
   const [joinTarget, setJoinTarget] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,7 +24,7 @@ export default function TournamentsPage() {
       setTournaments(t);
       setMembers(m);
     } catch {
-      // erreur silencieuse — la liste reste vide
+      // silencieux
     } finally {
       setLoading(false);
     }
@@ -31,16 +32,25 @@ export default function TournamentsPage() {
 
   useEffect(() => { load(); }, [load]);
 
-  const isMember = (tId) => members.some((m) => m.tournament_id === tId && m.user_id === user.id);
-  const memberCount = (tId) => members.filter((m) => m.tournament_id === tId).length;
+  // Index pré-calculés O(1)
+  const membershipSet = useMemo(
+    () => new Set(members.filter((m) => m.user_id === user.id).map((m) => m.tournament_id)),
+    [members, user.id]
+  );
+  const memberCountMap = useMemo(() => {
+    const map = new Map();
+    for (const m of members) map.set(m.tournament_id, (map.get(m.tournament_id) || 0) + 1);
+    return map;
+  }, [members]);
 
-  const handleClick = (t) => {
-    if (isMember(t.id)) {
-      navigate(`/tournament/${t.id}`);
-    } else {
-      setJoinTarget(t);
-    }
-  };
+  const myTournaments = useMemo(
+    () => tournaments.filter((t) => membershipSet.has(t.id)),
+    [tournaments, membershipSet]
+  );
+  const discoverTournaments = useMemo(
+    () => tournaments.filter((t) => !membershipSet.has(t.id)),
+    [tournaments, membershipSet]
+  );
 
   const handleJoin = async (t) => {
     await joinTournament(t.id, user.id);
@@ -49,36 +59,87 @@ export default function TournamentsPage() {
     navigate(`/tournament/${t.id}`);
   };
 
+  const currentList = tab === 'mine' ? myTournaments : discoverTournaments;
+
   return (
     <PageTransition>
       <div className="page-header flex-between">
         <div>
           <h1>Tournois</h1>
-          <p className="subtitle">Rejoignez un tournoi ou créez le vôtre</p>
+          <p className="subtitle">
+            {tab === 'mine' ? 'Vos tournois en cours' : 'Rejoignez un nouveau tournoi'}
+          </p>
         </div>
         <Button variant="gold" onClick={() => setShowCreate(true)}>
           <Plus size={16} /> Créer
         </Button>
       </div>
 
+      {/* Onglets */}
+      <div className="tabs" style={{ marginBottom: 20 }}>
+        <button
+          className={`tab ${tab === 'mine' ? 'active' : ''}`}
+          onClick={() => setTab('mine')}
+        >
+          <Trophy size={14} />
+          Mes tournois
+          {!loading && myTournaments.length > 0 && (
+            <span className="tab-count">{myTournaments.length}</span>
+          )}
+        </button>
+        <button
+          className={`tab ${tab === 'discover' ? 'active' : ''}`}
+          onClick={() => setTab('discover')}
+        >
+          <Compass size={14} />
+          Découvrir
+          {!loading && discoverTournaments.length > 0 && (
+            <span className="tab-count">{discoverTournaments.length}</span>
+          )}
+        </button>
+      </div>
+
       {loading ? (
         <EmptyState description="Chargement..." />
-      ) : tournaments.length === 0 ? (
-        <EmptyState
-          icon={<Trophy size={48} />}
-          title="Aucun tournoi"
-          description="Créez votre premier tournoi de pronostics !"
-        />
+      ) : currentList.length === 0 ? (
+        tab === 'mine' ? (
+          <EmptyState
+            icon={<Trophy size={48} />}
+            title="Aucun tournoi"
+            description="Créez votre premier tournoi ou rejoignez-en un depuis l'onglet Découvrir !"
+          >
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'center', marginTop: 16 }}>
+              <Button variant="gold" onClick={() => setShowCreate(true)}>
+                <Plus size={14} /> Créer un tournoi
+              </Button>
+              <Button variant="ghost" onClick={() => setTab('discover')}>
+                <Compass size={14} /> Découvrir
+              </Button>
+            </div>
+          </EmptyState>
+        ) : (
+          <EmptyState
+            icon={<Compass size={48} />}
+            title="Aucun tournoi disponible"
+            description="Tous les tournois existants sont déjà les vôtres, ou créez-en un nouveau !"
+          />
+        )
       ) : (
         <div className="grid-2">
-          {tournaments.map((t) => (
+          {currentList.map((t) => (
             <TournamentCard
               key={t.id}
               tournament={t}
-              memberCount={memberCount(t.id)}
-              isMember={isMember(t.id)}
+              memberCount={memberCountMap.get(t.id) || 0}
+              isMember={tab === 'mine'}
               isAdmin={t.admin_id === user.id}
-              onClick={() => handleClick(t)}
+              onClick={() => {
+                if (tab === 'mine') {
+                  navigate(`/tournament/${t.id}`);
+                } else {
+                  setJoinTarget(t);
+                }
+              }}
             />
           ))}
         </div>
@@ -87,13 +148,13 @@ export default function TournamentsPage() {
       <CreateTournamentModal
         open={showCreate}
         onClose={() => setShowCreate(false)}
-        onCreated={() => { setShowCreate(false); load(); }}
+        onCreated={(t) => { setShowCreate(false); load(); navigate(`/tournament/${t.id}`); }}
       />
 
       <JoinTournamentModal
         open={!!joinTarget}
         tournament={joinTarget}
-        memberCount={joinTarget ? memberCount(joinTarget.id) : 0}
+        memberCount={joinTarget ? (memberCountMap.get(joinTarget.id) || 0) : 0}
         onClose={() => setJoinTarget(null)}
         onJoin={handleJoin}
       />
