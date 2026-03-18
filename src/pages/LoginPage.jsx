@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Message } from '@/components/ui/Components';
+import { DEMO_MODE } from '@/lib/supabase';
 
 export default function LoginPage() {
   const { login, register } = useAuth();
   const navigate = useNavigate();
   const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,23 +17,34 @@ export default function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!username.trim() || !password.trim()) {
-      setError('Tous les champs sont requis');
-      return;
+
+    if (DEMO_MODE) {
+      if (!username.trim() || !password.trim()) { setError('Tous les champs sont requis'); return; }
+    } else {
+      if (isRegister && !username.trim()) { setError('Tous les champs sont requis'); return; }
+      if (!email.trim() || !password.trim()) { setError('Tous les champs sont requis'); return; }
     }
 
     setLoading(true);
     try {
       if (isRegister) {
-        await register(username.trim(), password);
+        await register(username.trim(), password, email.trim());
       } else {
-        await login(username.trim(), password);
+        await login(DEMO_MODE ? username.trim() : email.trim(), password);
       }
       navigate('/');
     } catch (err) {
       setError(err.message);
     }
     setLoading(false);
+  };
+
+  const switchMode = () => {
+    setIsRegister((v) => !v);
+    setError('');
+    setUsername('');
+    setEmail('');
+    setPassword('');
   };
 
   return (
@@ -47,17 +60,36 @@ export default function LoginPage() {
           <Message type="error">{error}</Message>
 
           <form onSubmit={handleSubmit}>
-            <div className="input-group">
-              <label>Pseudo</label>
-              <input
-                className="input-field"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Votre pseudo"
-                autoComplete="username"
-              />
-            </div>
+            {/* Username: always in register, always in demo */}
+            {(isRegister || DEMO_MODE) && (
+              <div className="input-group">
+                <label>Pseudo</label>
+                <input
+                  className="input-field"
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Votre pseudo"
+                  autoComplete="username"
+                />
+              </div>
+            )}
+
+            {/* Email: only in production mode */}
+            {!DEMO_MODE && (
+              <div className="input-group">
+                <label>Email</label>
+                <input
+                  className="input-field"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="votre@email.com"
+                  autoComplete="email"
+                />
+              </div>
+            )}
+
             <div className="input-group">
               <label>Mot de passe</label>
               <input
@@ -65,10 +97,11 @@ export default function LoginPage() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Votre mot de passe"
+                placeholder={isRegister ? '6 caractères minimum' : 'Votre mot de passe'}
                 autoComplete={isRegister ? 'new-password' : 'current-password'}
               />
             </div>
+
             <Button variant="gold" size="lg" style={{ width: '100%' }} disabled={loading}>
               {loading ? 'Chargement...' : isRegister ? "S'inscrire" : 'Se connecter'}
             </Button>
@@ -76,7 +109,7 @@ export default function LoginPage() {
 
           <div className="auth-toggle">
             {isRegister ? 'Déjà un compte ?' : 'Pas encore de compte ?'}{' '}
-            <span onClick={() => { setIsRegister(!isRegister); setError(''); }}>
+            <span onClick={switchMode}>
               {isRegister ? 'Se connecter' : "S'inscrire"}
             </span>
           </div>

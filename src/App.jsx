@@ -3,19 +3,21 @@ import { useAuth } from './contexts/AuthContext';
 import Navbar from './components/layout/Navbar';
 import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import TournamentsPage from './pages/TournamentsPage';
 import TournamentPage from './pages/TournamentPage';
 import MatchPage from './pages/MatchPage';
 import PlayerPage from './pages/PlayerPage';
 
 function ProtectedRoute({ children }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
   return children;
 }
 
 export default function App() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   return (
     <div className="app-container">
@@ -25,12 +27,13 @@ export default function App() {
         {/* Public */}
         <Route
           path="/login"
-          element={user ? <Navigate to="/" replace /> : <LoginPage />}
+          element={loading ? null : user ? <Navigate to="/" replace /> : <LoginPage />}
         />
         <Route
           path="/forgot-password"
-          element={user ? <Navigate to="/" replace /> : <ForgotPasswordPage />}
+          element={loading ? null : user ? <Navigate to="/" replace /> : <ForgotPasswordPage />}
         />
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* Protected */}
         <Route

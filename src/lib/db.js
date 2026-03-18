@@ -201,7 +201,3 @@ export async function createProfile(profile) {
   return Array.isArray(data) ? data[0] : data;
 }
 
-export async function loginProfile(username) {
-  // Récupère uniquement par username — la vérification du mot de passe se fait côté JS
-  return findProfileByUsername(username);
-}

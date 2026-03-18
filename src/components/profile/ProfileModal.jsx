@@ -23,7 +23,6 @@ function resizeImage(file) {
         canvas.width = size;
         canvas.height = size;
         const ctx = canvas.getContext('2d');
-        // Recadrage centré carré
         const min = Math.min(img.width, img.height);
         const sx = (img.width - min) / 2;
         const sy = (img.height - min) / 2;
@@ -44,9 +43,7 @@ export default function ProfileModal({ open, onClose }) {
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
 
-  // Changement de mot de passe
   const [showPwSection, setShowPwSection] = useState(false);
-  const [currentPw, setCurrentPw] = useState('');
   const [newPw, setNewPw] = useState('');
   const [confirmPw, setConfirmPw] = useState('');
   const [pwMsg, setPwMsg] = useState('');
@@ -63,7 +60,6 @@ export default function ProfileModal({ open, onClose }) {
     setError('');
     const base64 = await resizeImage(file);
     setSelected(base64);
-    // Reset input pour pouvoir re-sélectionner le même fichier
     e.target.value = '';
   };
 
@@ -85,20 +81,20 @@ export default function ProfileModal({ open, onClose }) {
     setMsg('');
     setError('');
     setShowPwSection(false);
-    setCurrentPw(''); setNewPw(''); setConfirmPw('');
+    setNewPw(''); setConfirmPw('');
     setPwMsg(''); setPwError('');
     onClose();
   };
 
   const handleChangePassword = async () => {
     setPwError('');
-    if (!currentPw || !newPw || !confirmPw) { setPwError('Tous les champs sont requis'); return; }
+    if (!newPw || !confirmPw) { setPwError('Tous les champs sont requis'); return; }
     if (newPw !== confirmPw) { setPwError('Les mots de passe ne correspondent pas'); return; }
     setPwSaving(true);
     try {
-      await changePassword(currentPw, newPw);
+      await changePassword(newPw);
       setPwMsg('Mot de passe modifié !');
-      setCurrentPw(''); setNewPw(''); setConfirmPw('');
+      setNewPw(''); setConfirmPw('');
       setTimeout(() => { setPwMsg(''); setShowPwSection(false); }, 2000);
     } catch (err) {
       setPwError(err.message);
@@ -126,7 +122,6 @@ export default function ProfileModal({ open, onClose }) {
         </div>
         <div style={{ fontFamily: 'Oswald', fontSize: 20, fontWeight: 600 }}>{user.username}</div>
 
-        {/* Bouton upload image */}
         <button
           className="avatar-upload-btn"
           onClick={() => fileInputRef.current?.click()}
@@ -143,12 +138,10 @@ export default function ProfileModal({ open, onClose }) {
         />
       </div>
 
-      {/* Séparateur */}
       <div className="avatar-divider">
         <span>ou choisir un emoji</span>
       </div>
 
-      {/* Grille emoji */}
       <div className="avatar-picker-grid" style={{ marginBottom: 16 }}>
         {AVATARS.map((emoji) => (
           <button
@@ -189,10 +182,6 @@ export default function ProfileModal({ open, onClose }) {
 
       {showPwSection && (
         <div style={{ marginTop: 12 }}>
-          <div className="input-group">
-            <label>Mot de passe actuel</label>
-            <input className="input-field" type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} placeholder="••••••••" />
-          </div>
           <div className="input-group">
             <label>Nouveau mot de passe</label>
             <input className="input-field" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} placeholder="6 caractères minimum" />

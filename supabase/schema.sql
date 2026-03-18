@@ -1,23 +1,9 @@
 -- ============================================
--- PRONOKING - Schema Supabase
+-- PRONOKING - Schema Supabase (Auth v2)
 -- ============================================
--- Exécutez ce script dans l'éditeur SQL de votre projet Supabase
--- https://supabase.com/dashboard/project/YOUR_PROJECT/sql
-
--- ==================== OPTION A : MIGRATION (recommandé) ====================
--- Si les tables existent déjà et que vous voulez juste ajouter les nouvelles colonnes
--- sans perdre les données existantes, exécutez uniquement ce bloc :
---
--- ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS max_members INTEGER DEFAULT NULL;
--- ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS is_locked BOOLEAN DEFAULT false;
--- ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS token_mode TEXT DEFAULT 'per_match';
--- ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS token_bank INTEGER DEFAULT NULL;
--- ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS max_tokens_per_match INTEGER DEFAULT NULL;
--- ALTER TABLE profiles ADD COLUMN IF NOT EXISTS avatar TEXT DEFAULT NULL;
--- CREATE POLICY "Public update profiles" ON profiles FOR UPDATE USING (true);
---
--- ==================== OPTION B : RESET COMPLET ====================
--- ⚠️  Supprime TOUTES les données. À n'utiliser que sur une base vierge ou en dev.
+-- Utilise Supabase Auth pour l'authentification (email + mot de passe).
+-- Exécutez ce script dans l'éditeur SQL de votre projet Supabase.
+-- ⚠️  Supprime TOUTES les données existantes.
 
 DROP TABLE IF EXISTS bets CASCADE;
 DROP TABLE IF EXISTS market_options CASCADE;
@@ -29,11 +15,10 @@ DROP TABLE IF EXISTS profiles CASCADE;
 
 -- ==================== TABLES ====================
 
--- Profils utilisateurs
+-- Profils publics (liés à auth.users)
 CREATE TABLE profiles (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   username TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
   avatar TEXT DEFAULT NULL,
   created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -45,8 +30,8 @@ CREATE TABLE tournaments (
   description TEXT,
   is_private BOOLEAN DEFAULT false,
   password TEXT,
-  tokens_per_match INTEGER DEFAULT 10,
   token_mode TEXT DEFAULT 'per_match',
+  tokens_per_match INTEGER DEFAULT 10,
   token_bank INTEGER DEFAULT NULL,
   max_tokens_per_match INTEGER DEFAULT NULL,
   max_members INTEGER DEFAULT NULL,
@@ -77,7 +62,7 @@ CREATE TABLE matches (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Marchés de paris (1N2, score exact, buteur, etc.)
+-- Marchés de paris
 CREATE TABLE markets (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   match_id UUID REFERENCES matches(id) ON DELETE CASCADE,
@@ -86,7 +71,7 @@ CREATE TABLE markets (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Options d'un marché avec cotes
+-- Options d'un marché
 CREATE TABLE market_options (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   market_id UUID REFERENCES markets(id) ON DELETE CASCADE,
@@ -126,33 +111,38 @@ ALTER TABLE markets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE market_options ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bets ENABLE ROW LEVEL SECURITY;
 
--- Policies permissives pour le développement
--- ⚠️  À RESTREINDRE en production !
-
+-- Profiles : lecture publique, écriture uniquement par le propriétaire
 CREATE POLICY "Public read profiles" ON profiles FOR SELECT USING (true);
-CREATE POLICY "Public insert profiles" ON profiles FOR INSERT WITH CHECK (true);
-CREATE POLICY "Public update profiles" ON profiles FOR UPDATE USING (true);
+CREATE POLICY "Users insert own profile" ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Users update own profile" ON profiles FOR UPDATE USING (auth.uid() = id);
 
+-- Tournois
 CREATE POLICY "Public read tournaments" ON tournaments FOR SELECT USING (true);
-CREATE POLICY "Public insert tournaments" ON tournaments FOR INSERT WITH CHECK (true);
-CREATE POLICY "Public update tournaments" ON tournaments FOR UPDATE USING (true);
-CREATE POLICY "Public delete tournaments" ON tournaments FOR DELETE USING (true);
+CREATE POLICY "Auth insert tournaments" ON tournaments FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "Admin update tournament" ON tournaments FOR UPDATE USING (auth.uid() = admin_id);
+CREATE POLICY "Admin delete tournament" ON tournaments FOR DELETE USING (auth.uid() = admin_id);
 
+-- Membres
 CREATE POLICY "Public read tournament_members" ON tournament_members FOR SELECT USING (true);
-CREATE POLICY "Public insert tournament_members" ON tournament_members FOR INSERT WITH CHECK (true);
+CREATE POLICY "Auth insert tournament_members" ON tournament_members FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "Auth delete own membership" ON tournament_members FOR DELETE USING (auth.uid() = user_id);
 
+-- Matchs
 CREATE POLICY "Public read matches" ON matches FOR SELECT USING (true);
-CREATE POLICY "Public insert matches" ON matches FOR INSERT WITH CHECK (true);
-CREATE POLICY "Public update matches" ON matches FOR UPDATE USING (true);
+CREATE POLICY "Auth insert matches" ON matches FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "Auth update matches" ON matches FOR UPDATE USING (auth.uid() IS NOT NULL);
 
+-- Marchés
 CREATE POLICY "Public read markets" ON markets FOR SELECT USING (true);
-CREATE POLICY "Public insert markets" ON markets FOR INSERT WITH CHECK (true);
+CREATE POLICY "Auth insert markets" ON markets FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 
+-- Options
 CREATE POLICY "Public read market_options" ON market_options FOR SELECT USING (true);
-CREATE POLICY "Public insert market_options" ON market_options FOR INSERT WITH CHECK (true);
-CREATE POLICY "Public update market_options" ON market_options FOR UPDATE USING (true);
+CREATE POLICY "Auth insert market_options" ON market_options FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "Auth update market_options" ON market_options FOR UPDATE USING (auth.uid() IS NOT NULL);
 
+-- Paris
 CREATE POLICY "Public read bets" ON bets FOR SELECT USING (true);
-CREATE POLICY "Public insert bets" ON bets FOR INSERT WITH CHECK (true);
-CREATE POLICY "Public update bets" ON bets FOR UPDATE USING (true);
-CREATE POLICY "Public delete bets" ON bets FOR DELETE USING (true);
+CREATE POLICY "Auth insert bets" ON bets FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
+CREATE POLICY "Auth update bets" ON bets FOR UPDATE USING (auth.uid() IS NOT NULL);
+CREATE POLICY "Auth delete bets" ON bets FOR DELETE USING (auth.uid() IS NOT NULL);
