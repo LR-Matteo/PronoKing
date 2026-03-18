@@ -26,6 +26,7 @@ export default function TournamentPage() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminError, setAdminError] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
 
   // Notifications Realtime — un seul effet pour éviter les désynchronisations
   const initializedRef = useRef(false);
@@ -89,8 +90,6 @@ export default function TournamentPage() {
     matchTab === 'upcoming' ? upcomingMatches :
     matchTab === 'live' ? startedMatches :
     finishedMatches;
-
-  const [linkCopied, setLinkCopied] = useState(false);
 
   const handleCopyInviteLink = () => {
     const base = `${window.location.origin}/join/${id}`;
