@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Message } from '@/components/ui/Components';
 
@@ -80,6 +80,14 @@ export default function LoginPage() {
               {isRegister ? 'Se connecter' : "S'inscrire"}
             </span>
           </div>
+
+          {!isRegister && (
+            <div style={{ textAlign: 'center', marginTop: 12 }}>
+              <Link to="/forgot-password" className="auth-forgot-link">
+                Mot de passe oublié ?
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </div>

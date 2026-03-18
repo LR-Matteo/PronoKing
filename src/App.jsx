@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import Navbar from './components/layout/Navbar';
 import LoginPage from './pages/LoginPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import TournamentsPage from './pages/TournamentsPage';
 import TournamentPage from './pages/TournamentPage';
 import MatchPage from './pages/MatchPage';
@@ -25,6 +26,10 @@ export default function App() {
         <Route
           path="/login"
           element={user ? <Navigate to="/" replace /> : <LoginPage />}
+        />
+        <Route
+          path="/forgot-password"
+          element={user ? <Navigate to="/" replace /> : <ForgotPasswordPage />}
         />
 
         {/* Protected */}

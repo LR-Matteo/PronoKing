@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Plus, Settings, Lock, Unlock, Trash2, Trophy, CalendarDays } from 'lucide-react';
+import { ChevronLeft, Plus, Settings, Lock, Unlock, Trash2, Trophy, CalendarDays, KeyRound } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
 import { useTournamentData } from '@/hooks/useTournamentData';
@@ -11,6 +11,7 @@ import Leaderboard from '@/components/players/Leaderboard';
 import PlayerDashboard from '@/components/players/PlayerDashboard';
 import MatchCard from '@/components/matches/MatchCard';
 import AddMatchModal from '@/components/matches/AddMatchModal';
+import ResetPasswordModal from '@/components/profile/ResetPasswordModal';
 
 export default function TournamentPage() {
   const { id } = useParams();
@@ -23,6 +24,7 @@ export default function TournamentPage() {
   const [matchTab, setMatchTab] = useState('upcoming');
 
   const [showAddMatch, setShowAddMatch] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [adminLoading, setAdminLoading] = useState(false);
   const [adminError, setAdminError] = useState('');
@@ -187,6 +189,9 @@ export default function TournamentPage() {
                     ? <><Unlock size={14} /> Déverrouiller</>
                     : <><Lock size={14} /> Verrouiller</>}
                 </Button>
+                <Button variant="ghost" size="sm" onClick={() => setShowResetPassword(true)}>
+                  <KeyRound size={14} /> Réinitialiser un mdp
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -241,6 +246,13 @@ export default function TournamentPage() {
           tournamentId={id}
         />
       )}
+
+      <ResetPasswordModal
+        open={showResetPassword}
+        members={members}
+        profiles={profiles}
+        onClose={() => setShowResetPassword(false)}
+      />
 
       <AddMatchModal
         open={showAddMatch}

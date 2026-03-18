@@ -803,6 +803,101 @@ select.input-field {
 .auth-toggle { text-align: center; margin-top: 20px; color: var(--text-muted); font-size: 14px; }
 .auth-toggle span { color: var(--accent-gold); cursor: pointer; font-weight: 600; }
 .auth-toggle span:hover { text-decoration: underline; }
+.auth-forgot-link { color: var(--text-muted); font-size: 13px; text-decoration: none; }
+.auth-forgot-link:hover { color: var(--accent-gold); text-decoration: underline; }
+
+/* Page mot de passe oublié */
+.forgot-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.forgot-step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent-gold);
+  color: #000;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* Reset password modal */
+.member-select-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.member-select-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-secondary);
+  text-align: left;
+  transition: border-color 0.15s;
+}
+.member-select-item.active {
+  border-color: var(--accent-gold);
+  color: var(--text-primary);
+}
+.temp-code-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.temp-code-value {
+  font-family: 'Courier New', monospace;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--accent-gold);
+  margin-top: 2px;
+}
+.temp-code-copy {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  padding: 4px;
+}
+
+/* Changement de mot de passe dans ProfileModal */
+.pw-section-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.pw-section-toggle:hover {
+  border-color: var(--text-muted);
+  color: var(--text-secondary);
+}
 
 /* ==================== MESSAGES ==================== */
 .msg-error {

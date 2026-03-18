@@ -201,8 +201,7 @@ export async function createProfile(profile) {
   return Array.isArray(data) ? data[0] : data;
 }
 
-export async function loginProfile(username, password) {
-  const { data, error } = await db.from('profiles').select('*').eq('username', username).eq('password_hash', password).limit(1);
-  if (error) throw error;
-  return data && data.length > 0 ? data[0] : null;
+export async function loginProfile(username) {
+  // Récupère uniquement par username — la vérification du mot de passe se fait côté JS
+  return findProfileByUsername(username);
 }

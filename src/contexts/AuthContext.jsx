@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useCallback } from 'react';
-import { findProfileByUsername, createProfile, loginProfile, updateProfile } from '@/lib/db';
+import { findProfileByUsername, createProfile, updateProfile } from '@/lib/db';
+import { hashPassword, verifyPassword } from '@/lib/crypto';
 
 const AuthContext = createContext(null);
 
@@ -13,21 +14,39 @@ export function AuthProvider({ children }) {
   });
 
   const login = useCallback(async (username, password) => {
-    const profile = await loginProfile(username, password);
+    const profile = await findProfileByUsername(username);
     if (!profile) throw new Error('Pseudo ou mot de passe incorrect');
-    setUser(profile);
-    localStorage.setItem('pronoking_user', JSON.stringify(profile));
-    return profile;
+    const valid = await verifyPassword(password, profile.password_hash);
+    if (!valid) throw new Error('Pseudo ou mot de passe incorrect');
+    // Ne pas stocker le hash en localStorage
+    const safeProfile = { ...profile, password_hash: undefined };
+    setUser(safeProfile);
+    localStorage.setItem('pronoking_user', JSON.stringify(safeProfile));
+    return safeProfile;
   }, []);
 
   const register = useCallback(async (username, password) => {
+    if (password.length < 6) throw new Error('Le mot de passe doit faire au moins 6 caractères');
     const existing = await findProfileByUsername(username);
     if (existing) throw new Error('Ce pseudo est déjà pris');
-    const profile = await createProfile({ username, password_hash: password });
-    setUser(profile);
-    localStorage.setItem('pronoking_user', JSON.stringify(profile));
-    return profile;
+    const hash = await hashPassword(password);
+    const profile = await createProfile({ username, password_hash: hash });
+    const safeProfile = { ...profile, password_hash: undefined };
+    setUser(safeProfile);
+    localStorage.setItem('pronoking_user', JSON.stringify(safeProfile));
+    return safeProfile;
   }, []);
+
+  const changePassword = useCallback(async (currentPassword, newPassword) => {
+    if (newPassword.length < 6) throw new Error('Le nouveau mot de passe doit faire au moins 6 caractères');
+    // Re-fetch pour avoir le hash à jour
+    const profile = await findProfileByUsername(user.username);
+    if (!profile) throw new Error('Profil introuvable');
+    const valid = await verifyPassword(currentPassword, profile.password_hash);
+    if (!valid) throw new Error('Mot de passe actuel incorrect');
+    const newHash = await hashPassword(newPassword);
+    await updateProfile(user.id, { password_hash: newHash });
+  }, [user]);
 
   const updateUser = useCallback(async (updates) => {
     const updated = { ...user, ...updates };
@@ -43,7 +62,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, login, register, logout, updateUser, changePassword }}>
       {children}
     </AuthContext.Provider>
   );

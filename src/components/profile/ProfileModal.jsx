@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Upload, X } from 'lucide-react';
+import { Upload, X, KeyRound, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Modal, Button, Message } from '@/components/ui/Components';
 import UserAvatar from '@/components/ui/UserAvatar';
@@ -37,12 +37,21 @@ function resizeImage(file) {
 }
 
 export default function ProfileModal({ open, onClose }) {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, changePassword } = useAuth();
   const [selected, setSelected] = useState(user?.avatar || null);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState('');
   const [error, setError] = useState('');
   const fileInputRef = useRef(null);
+
+  // Changement de mot de passe
+  const [showPwSection, setShowPwSection] = useState(false);
+  const [currentPw, setCurrentPw] = useState('');
+  const [newPw, setNewPw] = useState('');
+  const [confirmPw, setConfirmPw] = useState('');
+  const [pwMsg, setPwMsg] = useState('');
+  const [pwError, setPwError] = useState('');
+  const [pwSaving, setPwSaving] = useState(false);
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
@@ -75,7 +84,26 @@ export default function ProfileModal({ open, onClose }) {
     setSelected(user?.avatar || null);
     setMsg('');
     setError('');
+    setShowPwSection(false);
+    setCurrentPw(''); setNewPw(''); setConfirmPw('');
+    setPwMsg(''); setPwError('');
     onClose();
+  };
+
+  const handleChangePassword = async () => {
+    setPwError('');
+    if (!currentPw || !newPw || !confirmPw) { setPwError('Tous les champs sont requis'); return; }
+    if (newPw !== confirmPw) { setPwError('Les mots de passe ne correspondent pas'); return; }
+    setPwSaving(true);
+    try {
+      await changePassword(currentPw, newPw);
+      setPwMsg('Mot de passe modifié !');
+      setCurrentPw(''); setNewPw(''); setConfirmPw('');
+      setTimeout(() => { setPwMsg(''); setShowPwSection(false); }, 2000);
+    } catch (err) {
+      setPwError(err.message);
+    }
+    setPwSaving(false);
   };
 
   if (!user) return null;
@@ -141,12 +169,45 @@ export default function ProfileModal({ open, onClose }) {
         </div>
       )}
 
-      <div style={{ display: 'flex', gap: 12 }}>
+      <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
         <Button variant="gold" onClick={handleSave} disabled={saving}>
           {saving ? 'Enregistrement...' : 'Enregistrer'}
         </Button>
         <Button variant="ghost" onClick={handleClose}>Annuler</Button>
       </div>
+
+      {/* Section changement de mot de passe */}
+      <button
+        type="button"
+        className="pw-section-toggle"
+        onClick={() => setShowPwSection((v) => !v)}
+      >
+        <KeyRound size={14} />
+        Changer mon mot de passe
+        <ChevronDown size={14} style={{ marginLeft: 'auto', transform: showPwSection ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+      </button>
+
+      {showPwSection && (
+        <div style={{ marginTop: 12 }}>
+          <div className="input-group">
+            <label>Mot de passe actuel</label>
+            <input className="input-field" type="password" value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} placeholder="••••••••" />
+          </div>
+          <div className="input-group">
+            <label>Nouveau mot de passe</label>
+            <input className="input-field" type="password" value={newPw} onChange={(e) => setNewPw(e.target.value)} placeholder="6 caractères minimum" />
+          </div>
+          <div className="input-group">
+            <label>Confirmer le nouveau mot de passe</label>
+            <input className="input-field" type="password" value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} placeholder="••••••••" />
+          </div>
+          {pwError && <Message type="error">{pwError}</Message>}
+          {pwMsg && <div style={{ fontSize: 13, color: 'var(--accent-green)', marginBottom: 8 }}>{pwMsg}</div>}
+          <Button variant="outline" onClick={handleChangePassword} disabled={pwSaving}>
+            {pwSaving ? 'Modification...' : 'Confirmer le changement'}
+          </Button>
+        </div>
+      )}
     </Modal>
   );
 }
