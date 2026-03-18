@@ -62,6 +62,7 @@ export function AuthProvider({ children }) {
     const { data, error } = await supabase.auth.signInWithPassword({ email: emailOrUsername, password });
     if (error) throw new Error('Email ou mot de passe incorrect');
     const profile = await fetchProfile(data.user.id);
+    if (!profile) throw new Error('Profil introuvable — contacte l\'administrateur');
     const fullUser = { ...profile, email: data.user.email };
     setUser(fullUser);
     return fullUser;
@@ -89,9 +90,14 @@ export function AuthProvider({ children }) {
       options: { data: { username } },
     });
     if (error) throw new Error(error.message);
-    // Attendre que le trigger ait créé le profil
-    await new Promise((r) => setTimeout(r, 500));
-    const profile = await fetchProfile(data.user.id);
+    // Attendre que le trigger ait créé le profil (poll jusqu'à 3s)
+    let profile = null;
+    for (let i = 0; i < 6; i++) {
+      await new Promise((r) => setTimeout(r, 500));
+      profile = await fetchProfile(data.user.id);
+      if (profile) break;
+    }
+    if (!profile) throw new Error('Profil introuvable après inscription — réessaie.');
     const fullUser = { ...profile, email };
     setUser(fullUser);
     return fullUser;

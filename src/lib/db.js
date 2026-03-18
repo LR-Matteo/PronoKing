@@ -178,9 +178,9 @@ export async function fetchProfiles() {
 }
 
 export async function fetchProfile(id) {
-  const { data, error } = await db.from('profiles').select('*').eq('id', id).single();
+  const { data, error } = await db.from('profiles').select('*').eq('id', id).maybeSingle();
   if (error) throw error;
-  return data;
+  return data; // null si introuvable
 }
 
 export async function findProfileByUsername(username) {

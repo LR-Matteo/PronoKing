@@ -5,6 +5,9 @@
 -- Exécutez ce script dans l'éditeur SQL de votre projet Supabase.
 -- ⚠️  Supprime TOUTES les données existantes.
 
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP FUNCTION IF EXISTS handle_new_user();
+
 DROP TABLE IF EXISTS bets CASCADE;
 DROP TABLE IF EXISTS market_options CASCADE;
 DROP TABLE IF EXISTS markets CASCADE;
