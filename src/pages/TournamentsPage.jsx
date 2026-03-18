@@ -18,10 +18,15 @@ export default function TournamentsPage() {
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const [t, m] = await Promise.all([fetchTournaments(), fetchAllMembers()]);
-    setTournaments(t);
-    setMembers(m);
-    setLoading(false);
+    try {
+      const [t, m] = await Promise.all([fetchTournaments(), fetchAllMembers()]);
+      setTournaments(t);
+      setMembers(m);
+    } catch {
+      // erreur silencieuse — la liste reste vide
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { load(); }, [load]);

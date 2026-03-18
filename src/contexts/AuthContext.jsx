@@ -19,6 +19,9 @@ export function AuthProvider({ children }) {
       return;
     }
 
+    // Timeout de sécurité — si getSession n'a pas répondu après 5s, on débloque
+    const timeout = setTimeout(() => setLoading(false), 5000);
+
     // Restore Supabase session on mount
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (session?.user) {
@@ -27,10 +30,13 @@ export function AuthProvider({ children }) {
           if (profile) setUser({ ...profile, email: session.user.email });
         } catch {}
       }
+      clearTimeout(timeout);
       setLoading(false);
-    }).catch(() => setLoading(false));
+    }).catch(() => { clearTimeout(timeout); setLoading(false); });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // INITIAL_SESSION est déjà géré par getSession() ci-dessus — on ignore
+      if (event === 'INITIAL_SESSION') return;
       if (event === 'SIGNED_OUT') {
         setUser(null);
         return;
@@ -38,9 +44,10 @@ export function AuthProvider({ children }) {
       if (session?.user) {
         try {
           const profile = await fetchProfile(session.user.id);
+          // Ne jamais effacer l'utilisateur en cas d'échec du fetch
           if (profile) setUser({ ...profile, email: session.user.email });
         } catch {
-          setUser(null);
+          // Silencieux — on garde l'état utilisateur actuel
         }
       }
     });
