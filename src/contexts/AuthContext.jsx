@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase, DEMO_MODE } from '@/lib/supabase';
 import { findProfileByUsername, createProfile, updateProfile, fetchProfile } from '@/lib/db';
 import { hashPassword, verifyPassword } from '@/lib/crypto';
@@ -16,26 +16,28 @@ function writeCache(profile) {
 }
 
 export function AuthProvider({ children }) {
-  // Lecture synchrone du cache → pas d'écran de chargement si l'utilisateur est connu
   const cached = DEMO_MODE
     ? (() => { try { return JSON.parse(localStorage.getItem('pronoking_user')); } catch { return null; } })()
     : readCache();
 
   const [user, setUser] = useState(cached);
-  // loading = true seulement si Supabase ET aucun cache (premier lancement)
+  // loading = true uniquement si pas de cache (premier lancement ou après logout)
   const [loading, setLoading] = useState(!DEMO_MODE && !cached);
 
-  useEffect(() => {
-    if (DEMO_MODE) return; // demo : tout est synchrone, rien à faire
+  // Empêche un getSession() en retard d'écraser un login récent
+  const freshLoginRef = useRef(false);
 
-    // Vérification de session en arrière-plan.
-    // Si cache présent → loading déjà false, on ne bloque rien.
-    // Le timeout ne sert qu'à débloquer le spinner initial (premier lancement sans cache).
-    const timeout = setTimeout(() => setLoading(false), 12000);
+  useEffect(() => {
+    if (DEMO_MODE) return;
+
+    // Timeout de sécurité : débloquer le spinner max 5s
+    // NE PAS effacer le user ici — onAuthStateChange(SIGNED_OUT) gère les vraies déconnexions
+    const timeout = setTimeout(() => setLoading(false), 5000);
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       clearTimeout(timeout);
       if (session?.user) {
+        // Session valide → mettre à jour le profil en arrière-plan
         try {
           const profile = await fetchProfile(session.user.id);
           if (profile) {
@@ -44,16 +46,16 @@ export function AuthProvider({ children }) {
             writeCache(fullUser);
           }
         } catch {
-          // fetchProfile a échoué mais session valide → on garde le cache
+          // Erreur réseau → garder le cache existant
         }
-      } else {
-        // Supabase confirme qu'il n'y a pas de session valide → déconnexion
+      } else if (!freshLoginRef.current) {
+        // Supabase confirme pas de session ET l'utilisateur n'a pas refait un login entre-temps
         setUser(null);
         writeCache(null);
       }
       setLoading(false);
     }).catch(() => {
-      // Erreur réseau : on laisse le cache en place et on débloque le spinner
+      // Erreur réseau → garder le cache, débloquer le spinner
       clearTimeout(timeout);
       setLoading(false);
     });
@@ -61,6 +63,7 @@ export function AuthProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'INITIAL_SESSION') return; // déjà géré par getSession()
       if (event === 'SIGNED_OUT') {
+        freshLoginRef.current = false;
         setUser(null);
         writeCache(null);
         return;
@@ -91,6 +94,8 @@ export function AuthProvider({ children }) {
       localStorage.setItem('pronoking_user', JSON.stringify(safeProfile));
       return safeProfile;
     }
+    // Marquer qu'un login explicite a eu lieu → empêche getSession() en retard d'effacer
+    freshLoginRef.current = true;
     const { data, error } = await supabase.auth.signInWithPassword({ email: emailOrUsername, password });
     if (error) throw new Error('Email ou mot de passe incorrect');
     const profile = await fetchProfile(data.user.id);
@@ -122,6 +127,7 @@ export function AuthProvider({ children }) {
       options: { data: { username } },
     });
     if (error) throw new Error(error.message);
+    freshLoginRef.current = true;
     // Poll jusqu'à 3s le temps que le trigger crée le profil
     let profile = null;
     for (let i = 0; i < 6; i++) {
@@ -142,6 +148,7 @@ export function AuthProvider({ children }) {
       localStorage.removeItem('pronoking_user');
       return;
     }
+    freshLoginRef.current = false;
     await supabase.auth.signOut();
     setUser(null);
     writeCache(null);
