@@ -29,7 +29,7 @@ function ProtectedRoute({ children }) {
 }
 
 export default function App() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
 
   return (
     <div className="app-container">
@@ -39,11 +39,11 @@ export default function App() {
         {/* Public */}
         <Route
           path="/login"
-          element={user ? <Navigate to="/" replace /> : <LoginPage />}
+          element={loading ? <AppLoader /> : user ? <Navigate to="/" replace /> : <LoginPage />}
         />
         <Route
           path="/forgot-password"
-          element={user ? <Navigate to="/" replace /> : <ForgotPasswordPage />}
+          element={loading ? <AppLoader /> : user ? <Navigate to="/" replace /> : <ForgotPasswordPage />}
         />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/join/:id" element={<JoinPage />} />

@@ -4,7 +4,6 @@ import { findProfileByUsername, createProfile, updateProfile, fetchProfile } fro
 import { hashPassword, verifyPassword } from '@/lib/crypto';
 
 const AuthContext = createContext(null);
-
 const CACHE_KEY = 'pronoking_profile';
 
 function readCache() {
@@ -21,13 +20,14 @@ export function AuthProvider({ children }) {
     : readCache();
 
   const [user, setUser] = useState(cached);
+  // loading = true seulement sans cache (premier lancement / après logout)
   const [loading, setLoading] = useState(!DEMO_MODE && !cached);
+  // Évite qu'un getSession() en retard efface un login effectué entre-temps
   const freshLoginRef = useRef(false);
 
   useEffect(() => {
     if (DEMO_MODE) return;
 
-    // Débloquer le spinner au bout de 5s max si getSession ne répond pas
     const timeout = setTimeout(() => setLoading(false), 5000);
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
@@ -40,8 +40,9 @@ export function AuthProvider({ children }) {
             setUser(fullUser);
             writeCache(fullUser);
           }
-        } catch { /* garder le cache */ }
+        } catch { /* garder le cache en cas d'erreur réseau */ }
       } else if (!freshLoginRef.current) {
+        // Pas de session ET pas de login en cours → vider le cache périmé
         setUser(null);
         writeCache(null);
       }

@@ -14,8 +14,19 @@ function isValidUrl(str) {
 
 export const DEMO_MODE = !isValidUrl(supabaseUrl) || !supabaseAnonKey;
 
-// Client Supabase standard — pas de fetch personnalisé qui pourrait interférer
-// Les timeouts sont gérés au niveau des pages via Promise.race
+// Timeout sur toutes les requêtes pour éviter les hangs silencieux.
+// 30s pour auth (token refresh peut être lent), 15s pour le reste.
+function fetchWithTimeout(url, options = {}) {
+  const isAuth = typeof url === 'string' && url.includes('/auth/');
+  const ms = isAuth ? 30000 : 15000;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { ...options, signal: controller.signal })
+    .finally(() => clearTimeout(timer));
+}
+
 export const supabase = DEMO_MODE
   ? null
-  : createClient(supabaseUrl, supabaseAnonKey);
+  : createClient(supabaseUrl, supabaseAnonKey, {
+      global: { fetch: fetchWithTimeout },
+    });
