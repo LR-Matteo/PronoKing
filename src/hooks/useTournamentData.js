@@ -4,8 +4,6 @@ import {
   fetchMatches,
   fetchTournamentMembers,
   fetchProfilesByIds,
-  fetchMarketsByMatches,
-  fetchMarketOptionsByMarkets,
   fetchBetsByMatches,
 } from '@/lib/db';
 import { supabase, DEMO_MODE } from '@/lib/supabase';
@@ -28,9 +26,10 @@ export function useTournamentData(tournamentId) {
     try {
       setLoading(true);
 
-      // Round 1 — tout en parallèle
-      // En prod : une seule requête pour matches+markets+options grâce au nested select
-      // En demo : fallback sur les fonctions classiques
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 10000)
+      );
+
       let matchesPromise;
       if (DEMO_MODE) {
         matchesPromise = fetchMatches(tournamentId).then((m) => ({ matches: m, markets: [], options: [] }));
@@ -50,21 +49,19 @@ export function useTournamentData(tournamentId) {
           });
       }
 
-      const [t, { matches: m, markets: allMarkets, options: allOptions }, mem] = await Promise.all([
-        fetchTournament(tournamentId),
-        matchesPromise,
-        fetchTournamentMembers(tournamentId),
+      const [t, { matches: m, markets: allMarkets, options: allOptions }, mem] = await Promise.race([
+        Promise.all([fetchTournament(tournamentId), matchesPromise, fetchTournamentMembers(tournamentId)]),
+        timeoutPromise,
       ]);
 
       const matchIds = m.map((x) => x.id);
       matchIdsRef.current = matchIds;
       marketIdsRef.current = allMarkets.map((mk) => mk.id);
 
-      // Round 2 — bets + profils membres uniquement (pas tous les profils)
       const memberUserIds = mem.map((x) => x.user_id);
-      const [allBets, p] = await Promise.all([
-        fetchBetsByMatches(matchIds),
-        fetchProfilesByIds(memberUserIds),
+      const [allBets, p] = await Promise.race([
+        Promise.all([fetchBetsByMatches(matchIds), fetchProfilesByIds(memberUserIds)]),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000)),
       ]);
 
       setTournament(t);

@@ -29,9 +29,20 @@ export function AuthProvider({ children }) {
     if (DEMO_MODE) return; // demo : tout est synchrone, rien à faire
 
     // Vérification de session en arrière-plan (ne bloque pas l'affichage si cache présent)
-    const timeout = setTimeout(() => setLoading(false), 5000);
+    // Si getSession() ne répond pas en 8s → on considère la session invalide et on déconnecte
+    // pour éviter que l'app reste bloquée indéfiniment avec un cache périmé.
+    let done = false;
+    const timeout = setTimeout(() => {
+      if (done) return;
+      done = true;
+      setUser(null);
+      writeCache(null);
+      setLoading(false);
+    }, 8000);
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (done) return; // timeout a déjà géré la situation
+      done = true;
       clearTimeout(timeout);
       if (session?.user) {
         try {
@@ -48,7 +59,14 @@ export function AuthProvider({ children }) {
         writeCache(null);
       }
       setLoading(false);
-    }).catch(() => { clearTimeout(timeout); setLoading(false); });
+    }).catch(() => {
+      if (done) return;
+      done = true;
+      clearTimeout(timeout);
+      setUser(null);
+      writeCache(null);
+      setLoading(false);
+    });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (event === 'INITIAL_SESSION') return; // déjà géré par getSession()
