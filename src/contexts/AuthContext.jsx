@@ -94,13 +94,19 @@ export function AuthProvider({ children }) {
       localStorage.setItem('pronoking_user', JSON.stringify(safeProfile));
       return safeProfile;
     }
-    // Marquer qu'un login explicite a eu lieu → empêche getSession() en retard d'effacer
     freshLoginRef.current = true;
-    const { data, error } = await supabase.auth.signInWithPassword({ email: emailOrUsername, password });
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Connexion trop lente — vérifie ta connexion internet')), 15000)
+    );
+    const { data, error } = await Promise.race([
+      supabase.auth.signInWithPassword({ email: emailOrUsername, password }),
+      timeout,
+    ]);
     if (error) throw new Error('Email ou mot de passe incorrect');
     const profile = await fetchProfile(data.user.id);
     if (!profile) throw new Error("Profil introuvable — contacte l'administrateur");
     const fullUser = { ...profile, email: data.user.email };
+    setLoading(false); // débloquer ProtectedRoute immédiatement
     setUser(fullUser);
     writeCache(fullUser);
     return fullUser;
@@ -137,6 +143,7 @@ export function AuthProvider({ children }) {
     }
     if (!profile) throw new Error('Profil introuvable après inscription — réessaie.');
     const fullUser = { ...profile, email };
+    setLoading(false); // débloquer ProtectedRoute immédiatement
     setUser(fullUser);
     writeCache(fullUser);
     return fullUser;
