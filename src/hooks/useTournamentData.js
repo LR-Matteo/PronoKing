@@ -3,7 +3,7 @@ import {
   fetchTournament,
   fetchMatches,
   fetchTournamentMembers,
-  fetchProfiles,
+  fetchProfilesByIds,
   fetchMarketsByMatches,
   fetchMarketOptionsByMarkets,
   fetchBetsByMatches,
@@ -27,26 +27,45 @@ export function useTournamentData(tournamentId) {
   const load = useCallback(async () => {
     try {
       setLoading(true);
-      const [t, m, mem, p] = await Promise.all([
+
+      // Round 1 — tout en parallèle
+      // En prod : une seule requête pour matches+markets+options grâce au nested select
+      // En demo : fallback sur les fonctions classiques
+      let matchesPromise;
+      if (DEMO_MODE) {
+        matchesPromise = fetchMatches(tournamentId).then((m) => ({ matches: m, markets: [], options: [] }));
+      } else {
+        matchesPromise = supabase
+          .from('matches')
+          .select('*, markets(*, market_options(*))')
+          .eq('tournament_id', tournamentId)
+          .order('kickoff', { ascending: true })
+          .then(({ data, error }) => {
+            if (error) throw error;
+            const rows = data || [];
+            const markets = rows.flatMap((x) => x.markets || []);
+            const options = markets.flatMap((mk) => mk.market_options || []);
+            const matches = rows.map(({ markets: _m, ...rest }) => rest);
+            return { matches, markets, options };
+          });
+      }
+
+      const [t, { matches: m, markets: allMarkets, options: allOptions }, mem] = await Promise.all([
         fetchTournament(tournamentId),
-        fetchMatches(tournamentId),
+        matchesPromise,
         fetchTournamentMembers(tournamentId),
-        fetchProfiles(),
       ]);
 
       const matchIds = m.map((x) => x.id);
       matchIdsRef.current = matchIds;
+      marketIdsRef.current = allMarkets.map((mk) => mk.id);
 
-      // 3 requêtes batch au lieu de N+1
-      const [allMarkets, allBets] = await Promise.all([
-        fetchMarketsByMatches(matchIds),
+      // Round 2 — bets + profils membres uniquement (pas tous les profils)
+      const memberUserIds = mem.map((x) => x.user_id);
+      const [allBets, p] = await Promise.all([
         fetchBetsByMatches(matchIds),
+        fetchProfilesByIds(memberUserIds),
       ]);
-
-      const marketIds = allMarkets.map((mk) => mk.id);
-      marketIdsRef.current = marketIds;
-
-      const allOptions = await fetchMarketOptionsByMarkets(marketIds);
 
       setTournament(t);
       setMatches(m);
@@ -71,15 +90,28 @@ export function useTournamentData(tournamentId) {
   }, []);
 
   const silentReloadMatches = useCallback(async () => {
-    const m = await fetchMatches(tournamentId);
-    setMatches(m);
-    matchIdsRef.current = m.map((x) => x.id);
+    if (DEMO_MODE) {
+      const m = await fetchMatches(tournamentId);
+      setMatches(m);
+      matchIdsRef.current = m.map((x) => x.id);
+      return;
+    }
+    const { data, error } = await supabase
+      .from('matches')
+      .select('*, markets(*, market_options(*))')
+      .eq('tournament_id', tournamentId)
+      .order('kickoff', { ascending: true });
+    if (error) return;
+    const rows = data || [];
+    const newMarkets = rows.flatMap((x) => x.markets || []);
+    const newOptions = newMarkets.flatMap((mk) => mk.market_options || []);
+    const cleanMatches = rows.map(({ markets: _m, ...rest }) => rest);
+    setMatches(cleanMatches);
+    setMarkets(newMarkets);
+    setMarketOptions(newOptions);
+    matchIdsRef.current = cleanMatches.map((x) => x.id);
+    marketIdsRef.current = newMarkets.map((mk) => mk.id);
   }, [tournamentId]);
-
-  const silentReloadProfiles = useCallback(async () => {
-    const p = await fetchProfiles();
-    setProfiles(p);
-  }, []);
 
   useEffect(() => {
     if (tournamentId) load();

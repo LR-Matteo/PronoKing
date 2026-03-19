@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trophy, Compass } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchTournaments, fetchAllMembers, joinTournament } from '@/lib/db';
+import { fetchTournaments, fetchMembersByUser, fetchAllMembers, joinTournament } from '@/lib/db';
 import { Button, PageTransition, EmptyState } from '@/components/ui/Components';
 import TournamentCard from '@/components/tournaments/TournamentCard';
 import CreateTournamentModal from '@/components/tournaments/CreateTournamentModal';
@@ -12,36 +12,45 @@ export default function TournamentsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [tournaments, setTournaments] = useState([]);
-  const [members, setMembers] = useState([]);
+  const [userMembers, setUserMembers] = useState([]); // membres de l'utilisateur uniquement
+  const [allMembers, setAllMembers] = useState(null);  // null = pas encore chargé
   const [tab, setTab] = useState('mine');
   const [showCreate, setShowCreate] = useState(false);
   const [joinTarget, setJoinTarget] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // Chargement initial rapide : seulement les tournois + memberships de l'utilisateur
   const load = useCallback(async () => {
     try {
-      const [t, m] = await Promise.all([fetchTournaments(), fetchAllMembers()]);
+      const [t, m] = await Promise.all([fetchTournaments(), fetchMembersByUser(user.id)]);
       setTournaments(t);
-      setMembers(m);
+      setUserMembers(m);
     } catch {
       // silencieux
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user.id]);
 
   useEffect(() => { load(); }, [load]);
 
+  // Chargement différé des counts pour l'onglet Découvrir
+  useEffect(() => {
+    if (tab === 'discover' && allMembers === null) {
+      fetchAllMembers().then(setAllMembers).catch(() => setAllMembers([]));
+    }
+  }, [tab, allMembers]);
+
   // Index pré-calculés O(1)
   const membershipSet = useMemo(
-    () => new Set(members.filter((m) => m.user_id === user.id).map((m) => m.tournament_id)),
-    [members, user.id]
+    () => new Set(userMembers.map((m) => m.tournament_id)),
+    [userMembers]
   );
   const memberCountMap = useMemo(() => {
     const map = new Map();
-    for (const m of members) map.set(m.tournament_id, (map.get(m.tournament_id) || 0) + 1);
+    for (const m of (allMembers || [])) map.set(m.tournament_id, (map.get(m.tournament_id) || 0) + 1);
     return map;
-  }, [members]);
+  }, [allMembers]);
 
   const myTournaments = useMemo(
     () => tournaments.filter((t) => membershipSet.has(t.id)),
@@ -55,6 +64,7 @@ export default function TournamentsPage() {
   const handleJoin = async (t) => {
     await joinTournament(t.id, user.id);
     setJoinTarget(null);
+    setAllMembers(null); // forcer le rechargement des counts
     load();
     navigate(`/tournament/${t.id}`);
   };
@@ -84,7 +94,7 @@ export default function TournamentsPage() {
           <Trophy size={14} />
           Mes tournois
           {!loading && myTournaments.length > 0 && (
-            <span className="tab-count">{myTournaments.length}</span>
+            <span className="tab-count">({myTournaments.length})</span>
           )}
         </button>
         <button
@@ -94,7 +104,7 @@ export default function TournamentsPage() {
           <Compass size={14} />
           Découvrir
           {!loading && discoverTournaments.length > 0 && (
-            <span className="tab-count">{discoverTournaments.length}</span>
+            <span className="tab-count">({discoverTournaments.length})</span>
           )}
         </button>
       </div>

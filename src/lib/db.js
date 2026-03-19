@@ -53,6 +53,12 @@ export async function fetchAllMembers() {
   return data || [];
 }
 
+export async function fetchMembersByUser(userId) {
+  const { data, error } = await db.from('tournament_members').select('*').eq('user_id', userId);
+  if (error) throw error;
+  return data || [];
+}
+
 export async function joinTournament(tournamentId, userId) {
   const { data, error } = await db.from('tournament_members').insert({ tournament_id: tournamentId, user_id: userId });
   if (error) throw error;
@@ -179,6 +185,13 @@ export async function deleteBet(id) {
 
 export async function fetchProfiles() {
   const { data, error } = await db.from('profiles').select('*');
+  if (error) throw error;
+  return data || [];
+}
+
+export async function fetchProfilesByIds(ids) {
+  if (!ids || ids.length === 0) return [];
+  const { data, error } = await db.from('profiles').select('*').in('id', ids);
   if (error) throw error;
   return data || [];
 }
