@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trophy, Compass } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,28 +8,47 @@ import TournamentCard from '@/components/tournaments/TournamentCard';
 import CreateTournamentModal from '@/components/tournaments/CreateTournamentModal';
 import JoinTournamentModal from '@/components/tournaments/JoinTournamentModal';
 
+const CACHE_KEY_T = 'pronoking_tournaments';
+
+function readTCache(userId) {
+  try {
+    const c = JSON.parse(localStorage.getItem(CACHE_KEY_T));
+    return c?.userId === userId ? c : null;
+  } catch { return null; }
+}
+function writeTCache(userId, tournaments, members) {
+  try {
+    localStorage.setItem(CACHE_KEY_T, JSON.stringify({ userId, tournaments, members }));
+  } catch {}
+}
+
 export default function TournamentsPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [tournaments, setTournaments] = useState([]);
-  const [userMembers, setUserMembers] = useState([]); // membres de l'utilisateur uniquement
-  const [allMembers, setAllMembers] = useState(null);  // null = pas encore chargé
+
+  // Cache synchrone → pas d'écran de chargement au retour sur la page
+  const cachedRef = useRef(readTCache(user.id));
+  const cached = cachedRef.current;
+  const [tournaments, setTournaments] = useState(cached?.tournaments || []);
+  const [userMembers, setUserMembers] = useState(cached?.members || []);
+  const [allMembers, setAllMembers] = useState(null);
   const [tab, setTab] = useState('mine');
   const [showCreate, setShowCreate] = useState(false);
   const [joinTarget, setJoinTarget] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cached);
   const [loadError, setLoadError] = useState(false);
 
-  // Chargement initial rapide : seulement les tournois + memberships de l'utilisateur
+  // Chargement réseau — silencieux si le cache a déjà fourni des données
   const load = useCallback(async () => {
-    setLoading(true);
     setLoadError(false);
     try {
       const [t, m] = await Promise.all([fetchTournaments(), fetchMembersByUser(user.id)]);
       setTournaments(t);
       setUserMembers(m);
+      writeTCache(user.id, t, m);
+      cachedRef.current = { userId: user.id, tournaments: t, members: m };
     } catch {
-      setLoadError(true);
+      if (!cachedRef.current) setLoadError(true);
     } finally {
       setLoading(false);
     }

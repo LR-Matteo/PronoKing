@@ -15,8 +15,11 @@ function isValidUrl(str) {
 
 export const DEMO_MODE = !isValidUrl(supabaseUrl) || !supabaseAnonKey;
 
-// Fetch avec timeout de 10s pour éviter les blocages infinis sur mobile
+// Timeout de 10s uniquement sur les requêtes DB (pas sur le refresh du token auth)
 function fetchWithTimeout(url, options = {}) {
+  if (typeof url === 'string' && url.includes('/auth/')) {
+    return fetch(url, options); // pas de timeout sur les opérations d'authentification
+  }
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 10000);
   return fetch(url, { ...options, signal: controller.signal })

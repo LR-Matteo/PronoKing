@@ -195,8 +195,7 @@ export function useTournamentData(tournamentId) {
       .subscribe();
 
     return () => {
-      channel.unsubscribe();
-      supabase.removeChannel(channel);
+      supabase.removeChannel(channel); // inclut l'unsubscribe — ne pas appeler les deux
     };
   }, [tournamentId, silentReloadBets, silentReloadMatches]);
 
