@@ -59,6 +59,12 @@ export async function fetchMembersByUser(userId) {
   return data || [];
 }
 
+export async function fetchMemberCounts() {
+  const { data, error } = await db.from('tournament_members').select('tournament_id');
+  if (error) throw error;
+  return data || [];
+}
+
 export async function joinTournament(tournamentId, userId) {
   const { data, error } = await db.from('tournament_members').insert({ tournament_id: tournamentId, user_id: userId });
   if (error) throw error;

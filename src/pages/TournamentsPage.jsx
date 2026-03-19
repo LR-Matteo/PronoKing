@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Trophy, Compass } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetchTournaments, fetchMembersByUser, fetchAllMembers, joinTournament } from '@/lib/db';
+import { fetchTournaments, fetchMembersByUser, fetchMemberCounts, fetchAllMembers, joinTournament } from '@/lib/db';
 import { Button, PageTransition, EmptyState } from '@/components/ui/Components';
 import TournamentCard from '@/components/tournaments/TournamentCard';
 import CreateTournamentModal from '@/components/tournaments/CreateTournamentModal';
@@ -16,9 +16,9 @@ function readTCache(userId) {
     return c?.userId === userId ? c : null;
   } catch { return null; }
 }
-function writeTCache(userId, tournaments, members) {
+function writeTCache(userId, tournaments, members, memberCounts) {
   try {
-    localStorage.setItem(CACHE_KEY_T, JSON.stringify({ userId, tournaments, members }));
+    localStorage.setItem(CACHE_KEY_T, JSON.stringify({ userId, tournaments, members, memberCounts }));
   } catch {}
 }
 
@@ -31,6 +31,7 @@ export default function TournamentsPage() {
   const cached = cachedRef.current;
   const [tournaments, setTournaments] = useState(cached?.tournaments || []);
   const [userMembers, setUserMembers] = useState(cached?.members || []);
+  const [memberCounts, setMemberCounts] = useState(cached?.memberCounts || []);
   const [allMembers, setAllMembers] = useState(null);
   const [tab, setTab] = useState('mine');
   const [showCreate, setShowCreate] = useState(false);
@@ -42,11 +43,12 @@ export default function TournamentsPage() {
   const load = useCallback(async () => {
     setLoadError(false);
     try {
-      const [t, m] = await Promise.all([fetchTournaments(), fetchMembersByUser(user.id)]);
+      const [t, m, counts] = await Promise.all([fetchTournaments(), fetchMembersByUser(user.id), fetchMemberCounts()]);
       setTournaments(t);
       setUserMembers(m);
-      writeTCache(user.id, t, m);
-      cachedRef.current = { userId: user.id, tournaments: t, members: m };
+      setMemberCounts(counts);
+      writeTCache(user.id, t, m, counts);
+      cachedRef.current = { userId: user.id, tournaments: t, members: m, memberCounts: counts };
     } catch {
       if (!cachedRef.current) setLoadError(true);
     } finally {
@@ -69,10 +71,13 @@ export default function TournamentsPage() {
     [userMembers]
   );
   const memberCountMap = useMemo(() => {
+    // memberCounts est chargé dès le départ (requête légère, juste tournament_id)
+    // allMembers est chargé uniquement si l'onglet Découvrir est ouvert
+    const source = allMembers || memberCounts;
     const map = new Map();
-    for (const m of (allMembers || [])) map.set(m.tournament_id, (map.get(m.tournament_id) || 0) + 1);
+    for (const m of source) map.set(m.tournament_id, (map.get(m.tournament_id) || 0) + 1);
     return map;
-  }, [allMembers]);
+  }, [allMembers, memberCounts]);
 
   const myTournaments = useMemo(
     () => tournaments.filter((t) => membershipSet.has(t.id)),
