@@ -43,7 +43,7 @@ export default function TournamentsPage() {
   // Promise.race garantit qu'on ne reste jamais bloqué > 8s (ex. refresh token mobile)
   const load = useCallback(async () => {
     setLoadError(false);
-    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000));
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000));
     try {
       const [t, m, counts] = await Promise.race([
         Promise.all([fetchTournaments(), fetchMembersByUser(user.id), fetchMemberCounts()]),

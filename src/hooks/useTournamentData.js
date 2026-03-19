@@ -27,7 +27,7 @@ export function useTournamentData(tournamentId) {
       setLoading(true);
 
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('timeout')), 10000)
+        setTimeout(() => reject(new Error('timeout')), 15000)
       );
 
       let matchesPromise;
@@ -61,7 +61,7 @@ export function useTournamentData(tournamentId) {
       const memberUserIds = mem.map((x) => x.user_id);
       const [allBets, p] = await Promise.race([
         Promise.all([fetchBetsByMatches(matchIds), fetchProfilesByIds(memberUserIds)]),
-        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000)),
+        new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 12000)),
       ]);
 
       setTournament(t);

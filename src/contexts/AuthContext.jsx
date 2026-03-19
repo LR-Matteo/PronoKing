@@ -28,21 +28,12 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     if (DEMO_MODE) return; // demo : tout est synchrone, rien à faire
 
-    // Vérification de session en arrière-plan (ne bloque pas l'affichage si cache présent)
-    // Si getSession() ne répond pas en 8s → on considère la session invalide et on déconnecte
-    // pour éviter que l'app reste bloquée indéfiniment avec un cache périmé.
-    let done = false;
-    const timeout = setTimeout(() => {
-      if (done) return;
-      done = true;
-      setUser(null);
-      writeCache(null);
-      setLoading(false);
-    }, 8000);
+    // Vérification de session en arrière-plan.
+    // Si cache présent → loading déjà false, on ne bloque rien.
+    // Le timeout ne sert qu'à débloquer le spinner initial (premier lancement sans cache).
+    const timeout = setTimeout(() => setLoading(false), 12000);
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (done) return; // timeout a déjà géré la situation
-      done = true;
       clearTimeout(timeout);
       if (session?.user) {
         try {
@@ -52,19 +43,18 @@ export function AuthProvider({ children }) {
             setUser(fullUser);
             writeCache(fullUser);
           }
-        } catch {}
+        } catch {
+          // fetchProfile a échoué mais session valide → on garde le cache
+        }
       } else {
-        // Session expirée ou invalide → déconnexion
+        // Supabase confirme qu'il n'y a pas de session valide → déconnexion
         setUser(null);
         writeCache(null);
       }
       setLoading(false);
     }).catch(() => {
-      if (done) return;
-      done = true;
+      // Erreur réseau : on laisse le cache en place et on débloque le spinner
       clearTimeout(timeout);
-      setUser(null);
-      writeCache(null);
       setLoading(false);
     });
 
