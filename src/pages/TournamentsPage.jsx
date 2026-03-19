@@ -18,15 +18,18 @@ export default function TournamentsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [joinTarget, setJoinTarget] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   // Chargement initial rapide : seulement les tournois + memberships de l'utilisateur
   const load = useCallback(async () => {
+    setLoading(true);
+    setLoadError(false);
     try {
       const [t, m] = await Promise.all([fetchTournaments(), fetchMembersByUser(user.id)]);
       setTournaments(t);
       setUserMembers(m);
     } catch {
-      // silencieux
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -111,6 +114,15 @@ export default function TournamentsPage() {
 
       {loading ? (
         <EmptyState description="Chargement..." />
+      ) : loadError ? (
+        <EmptyState
+          title="Erreur de connexion"
+          description="Impossible de charger les tournois. Vérifie ta connexion internet."
+        >
+          <Button variant="gold" onClick={load} style={{ marginTop: 16 }}>
+            Réessayer
+          </Button>
+        </EmptyState>
       ) : currentList.length === 0 ? (
         tab === 'mine' ? (
           <EmptyState

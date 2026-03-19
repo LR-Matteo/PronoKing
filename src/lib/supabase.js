@@ -15,5 +15,17 @@ function isValidUrl(str) {
 
 export const DEMO_MODE = !isValidUrl(supabaseUrl) || !supabaseAnonKey;
 
+// Fetch avec timeout de 10s pour éviter les blocages infinis sur mobile
+function fetchWithTimeout(url, options = {}) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 10000);
+  return fetch(url, { ...options, signal: controller.signal })
+    .finally(() => clearTimeout(timer));
+}
+
 // Only create the Supabase client if we have valid credentials
-export const supabase = DEMO_MODE ? null : createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = DEMO_MODE
+  ? null
+  : createClient(supabaseUrl, supabaseAnonKey, {
+      global: { fetch: fetchWithTimeout },
+    });

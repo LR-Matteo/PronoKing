@@ -16,7 +16,7 @@ export default function MatchPage() {
   const { tournamentId, matchId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { match, tournament, markets, marketOptions, bets, tournamentMatchIds, loading, reload } = useMatchData(matchId, tournamentId);
+  const { match, tournament, markets, marketOptions, bets, tournamentMatchIds, loading, error, reload } = useMatchData(matchId, tournamentId);
   const { addToast } = useToast();
   const [showAddMarket, setShowAddMarket] = useState(false);
   const [showValidate, setShowValidate] = useState(false);
@@ -52,6 +52,11 @@ export default function MatchPage() {
   }, [match?.is_finished]);
 
   if (loading) return <EmptyState description="Chargement..." />;
+  if (error) return (
+    <EmptyState title="Erreur de connexion" description="Impossible de charger le match. Vérifie ta connexion.">
+      <Button variant="gold" onClick={reload} style={{ marginTop: 16 }}>Réessayer</Button>
+    </EmptyState>
+  );
   if (!match) return <EmptyState description="Match introuvable" />;
 
   const isAdmin = tournament?.admin_id === user.id;

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { fetchMatch, fetchTournament, fetchMarkets, fetchMarketOptionsByMarkets, fetchBets, fetchMatches } from '@/lib/db';
+import { fetchMatch, fetchTournament, fetchMarkets, fetchMarketOptions, fetchMarketOptionsByMarkets, fetchBets, fetchMatches } from '@/lib/db';
 import { supabase, DEMO_MODE } from '@/lib/supabase';
 
 export function useMatchData(matchId, tournamentId) {
@@ -9,6 +9,7 @@ export function useMatchData(matchId, tournamentId) {
   const [marketOptions, setMarketOptions] = useState([]);
   const [bets, setBets] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Ref pour les IDs de marchés (évite les closures périmées)
   const marketIdsRef = useRef([]);
@@ -16,8 +17,9 @@ export function useMatchData(matchId, tournamentId) {
   const [tournamentMatchIds, setTournamentMatchIds] = useState([]);
 
   const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      setLoading(true);
       // Tout en parallèle, y compris les matchs du tournoi pour le mode banque
       const [m, t, mk, b, tourneyMatches] = await Promise.all([
         fetchMatch(matchId),
@@ -38,6 +40,8 @@ export function useMatchData(matchId, tournamentId) {
       setMarketOptions(allOpts);
       setBets(b);
       setTournamentMatchIds(tourneyMatches.map((tm) => tm.id));
+    } catch (e) {
+      setError(e.message);
     } finally {
       setLoading(false);
     }
@@ -105,5 +109,5 @@ export function useMatchData(matchId, tournamentId) {
     };
   }, [matchId]);
 
-  return { match, tournament, markets, marketOptions, bets, tournamentMatchIds, loading, reload: load };
+  return { match, tournament, markets, marketOptions, bets, tournamentMatchIds, loading, error, reload: load };
 }
