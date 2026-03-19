@@ -21,23 +21,18 @@ export function AuthProvider({ children }) {
     : readCache();
 
   const [user, setUser] = useState(cached);
-  // loading = true uniquement si pas de cache (premier lancement ou après logout)
   const [loading, setLoading] = useState(!DEMO_MODE && !cached);
-
-  // Empêche un getSession() en retard d'écraser un login récent
   const freshLoginRef = useRef(false);
 
   useEffect(() => {
     if (DEMO_MODE) return;
 
-    // Timeout de sécurité : débloquer le spinner max 5s
-    // NE PAS effacer le user ici — onAuthStateChange(SIGNED_OUT) gère les vraies déconnexions
+    // Débloquer le spinner au bout de 5s max si getSession ne répond pas
     const timeout = setTimeout(() => setLoading(false), 5000);
 
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       clearTimeout(timeout);
       if (session?.user) {
-        // Session valide → mettre à jour le profil en arrière-plan
         try {
           const profile = await fetchProfile(session.user.id);
           if (profile) {
@@ -45,23 +40,19 @@ export function AuthProvider({ children }) {
             setUser(fullUser);
             writeCache(fullUser);
           }
-        } catch {
-          // Erreur réseau → garder le cache existant
-        }
+        } catch { /* garder le cache */ }
       } else if (!freshLoginRef.current) {
-        // Supabase confirme pas de session ET l'utilisateur n'a pas refait un login entre-temps
         setUser(null);
         writeCache(null);
       }
       setLoading(false);
     }).catch(() => {
-      // Erreur réseau → garder le cache, débloquer le spinner
       clearTimeout(timeout);
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'INITIAL_SESSION') return; // déjà géré par getSession()
+      if (event === 'INITIAL_SESSION') return;
       if (event === 'SIGNED_OUT') {
         freshLoginRef.current = false;
         setUser(null);
@@ -95,18 +86,12 @@ export function AuthProvider({ children }) {
       return safeProfile;
     }
     freshLoginRef.current = true;
-    const timeout = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error('Connexion trop lente — vérifie ta connexion internet')), 15000)
-    );
-    const { data, error } = await Promise.race([
-      supabase.auth.signInWithPassword({ email: emailOrUsername, password }),
-      timeout,
-    ]);
+    const { data, error } = await supabase.auth.signInWithPassword({ email: emailOrUsername, password });
     if (error) throw new Error('Email ou mot de passe incorrect');
     const profile = await fetchProfile(data.user.id);
     if (!profile) throw new Error("Profil introuvable — contacte l'administrateur");
     const fullUser = { ...profile, email: data.user.email };
-    setLoading(false); // débloquer ProtectedRoute immédiatement
+    setLoading(false);
     setUser(fullUser);
     writeCache(fullUser);
     return fullUser;
@@ -127,14 +112,9 @@ export function AuthProvider({ children }) {
     if (password.length < 6) throw new Error('Le mot de passe doit faire au moins 6 caractères');
     const existing = await findProfileByUsername(username);
     if (existing) throw new Error('Ce pseudo est déjà pris');
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { username } },
-    });
+    const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { username } } });
     if (error) throw new Error(error.message);
     freshLoginRef.current = true;
-    // Poll jusqu'à 3s le temps que le trigger crée le profil
     let profile = null;
     for (let i = 0; i < 6; i++) {
       await new Promise((r) => setTimeout(r, 500));
@@ -143,7 +123,7 @@ export function AuthProvider({ children }) {
     }
     if (!profile) throw new Error('Profil introuvable après inscription — réessaie.');
     const fullUser = { ...profile, email };
-    setLoading(false); // débloquer ProtectedRoute immédiatement
+    setLoading(false);
     setUser(fullUser);
     writeCache(fullUser);
     return fullUser;
