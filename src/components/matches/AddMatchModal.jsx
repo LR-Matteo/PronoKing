@@ -100,16 +100,23 @@ export default function AddMatchModal({ open, tournamentId, onClose, onAdded }) 
         kickoff: new Date(kickoff).toISOString(),
       });
 
-      for (const m of markets) {
-        const market = await createMarket({ match_id: match.id, type: m.type, label: m.label.trim() });
-        for (const opt of m.options) {
-          await createMarketOption({
-            market_id: market.id,
-            label: opt.label.trim(),
-            odds: parseFloat(opt.odds) || 2.0,
-          });
-        }
-      }
+      // Créer tous les marchés en parallèle
+      const createdMarkets = await Promise.all(
+        markets.map((m) => createMarket({ match_id: match.id, type: m.type, label: m.label.trim() }))
+      );
+
+      // Créer toutes les options en parallèle (tous marchés confondus)
+      await Promise.all(
+        createdMarkets.flatMap((market, i) =>
+          markets[i].options.map((opt) =>
+            createMarketOption({
+              market_id: market.id,
+              label: opt.label.trim(),
+              odds: parseFloat(opt.odds) || 2.0,
+            })
+          )
+        )
+      );
 
       reset();
       onAdded();
