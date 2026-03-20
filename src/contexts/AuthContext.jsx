@@ -59,7 +59,6 @@ export function AuthProvider({ children }) {
       localStorage.setItem('pronoking_user', JSON.stringify(safeProfile));
       return safeProfile;
     }
-    freshLoginRef.current = true;
     const { data, error } = await supabase.auth.signInWithPassword({ email: emailOrUsername, password });
     if (error) throw new Error('Email ou mot de passe incorrect');
     const profile = await fetchProfile(data.user.id);
@@ -88,7 +87,6 @@ export function AuthProvider({ children }) {
     if (existing) throw new Error('Ce pseudo est déjà pris');
     const { data, error } = await supabase.auth.signUp({ email, password, options: { data: { username } } });
     if (error) throw new Error(error.message);
-    freshLoginRef.current = true;
     let profile = null;
     for (let i = 0; i < 6; i++) {
       await new Promise((r) => setTimeout(r, 500));
@@ -109,7 +107,6 @@ export function AuthProvider({ children }) {
       localStorage.removeItem('pronoking_user');
       return;
     }
-    freshLoginRef.current = false;
     await supabase.auth.signOut();
     setUser(null);
     writeCache(null);
