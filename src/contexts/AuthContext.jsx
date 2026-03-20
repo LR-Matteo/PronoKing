@@ -24,23 +24,12 @@ export function AuthProvider({ children }) {
 
     writeCache(null);
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       // Ignorer la session existante au démarrage → login obligatoire
-      if (event === 'INITIAL_SESSION') return;
+      // Le login/register gèrent eux-mêmes le setUser pour éviter les conflits de timing
       if (event === 'SIGNED_OUT') {
         setUser(null);
         writeCache(null);
-        return;
-      }
-      if (event === 'SIGNED_IN' && session?.user) {
-        try {
-          const profile = await fetchProfile(session.user.id);
-          if (profile) {
-            const fullUser = { ...profile, email: session.user.email };
-            setUser(fullUser);
-            writeCache(fullUser);
-          }
-        } catch {}
       }
     });
 
