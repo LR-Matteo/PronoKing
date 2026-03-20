@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import '@/styles/components/player-dashboard.css';
 import { ChevronLeft } from 'lucide-react';
 import {
   fetchProfile,

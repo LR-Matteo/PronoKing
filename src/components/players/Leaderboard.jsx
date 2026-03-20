@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import '@/styles/components/leaderboard.css';
 import { Trophy } from 'lucide-react';
 import { classNames } from '@/lib/utils';
 import { useRankings } from '@/hooks/useRankings';

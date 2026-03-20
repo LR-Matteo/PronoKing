@@ -1,0 +1,74 @@
+/* ==================== AUTH PAGES ==================== */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  position: relative;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--gradient-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 40px;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  z-index: 1;
+}
+
+.auth-logo { text-align: center; margin-bottom: 32px; }
+
+.auth-logo h1 {
+  font-size: 36px;
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 3px;
+}
+
+.auth-logo p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+.auth-toggle { text-align: center; margin-top: 20px; color: var(--text-muted); font-size: 14px; }
+.auth-toggle span { color: var(--accent-gold); cursor: pointer; font-weight: 600; }
+.auth-toggle span:hover { text-decoration: underline; }
+
+.auth-forgot-link { color: var(--text-muted); font-size: 13px; text-decoration: none; }
+.auth-forgot-link:hover { color: var(--accent-gold); text-decoration: underline; }
+
+.forgot-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.forgot-step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent-gold);
+  color: #000;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .auth-card { padding: 24px; }
+  .auth-logo h1 { font-size: 28px; }
+}
+
+@media (max-width: 480px) {
+  .auth-card { padding: 20px; }
+  .auth-logo h1 { font-size: 24px; }
+}

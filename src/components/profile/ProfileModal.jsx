@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { Upload, X, KeyRound, ChevronDown } from 'lucide-react';
+import '@/styles/components/profile.css';
 import { useAuth } from '@/contexts/AuthContext';
 import { Modal, Button, Message } from '@/components/ui/Components';
 import UserAvatar from '@/components/ui/UserAvatar';

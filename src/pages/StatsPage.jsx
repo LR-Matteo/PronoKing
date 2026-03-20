@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '@/styles/components/stats.css';
 import { BarChart2, TrendingUp, Target, Zap, Trophy, ChevronLeft, Globe } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import {

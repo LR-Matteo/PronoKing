@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Copy, Check, RefreshCw } from 'lucide-react';
+import '@/styles/components/profile.css';
 import { Modal, Button, Message } from '@/components/ui/Components';
 import { generateTempPassword, hashPassword } from '@/lib/crypto';
 import { updateProfile } from '@/lib/db';

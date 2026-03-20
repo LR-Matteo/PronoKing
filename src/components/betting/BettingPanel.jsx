@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Check, Minus, Plus } from 'lucide-react';
+import '@/styles/components/betting.css';
 import { useAuth } from '@/contexts/AuthContext';
 import { deleteBet, createBet } from '@/lib/db';
 import { isMatchUpcoming } from '@/lib/utils';

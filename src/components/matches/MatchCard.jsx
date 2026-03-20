@@ -1,4 +1,5 @@
 import { Clock } from 'lucide-react';
+import '@/styles/components/match-card.css';
 import { Badge, TokenCoin } from '@/components/ui/Components';
 import TeamLogo from '@/components/ui/TeamLogo';
 import { formatDateShort, isMatchStarted, isMatchUpcoming } from '@/lib/utils';

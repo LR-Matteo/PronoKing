@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { LogOut, BarChart2 } from 'lucide-react';
+import '@/styles/components/navbar.css';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Components';

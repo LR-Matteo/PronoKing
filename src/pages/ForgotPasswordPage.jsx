@@ -4,6 +4,8 @@ import { KeyRound, ChevronLeft, Send } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Message } from '@/components/ui/Components';
 import { DEMO_MODE } from '@/lib/supabase';
+import { validateEmail } from '@/lib/validation';
+import '@/styles/components/auth.css';
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
@@ -15,7 +17,8 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim()) { setError('Saisis ton adresse email'); return; }
+    const emailErr = validateEmail(email);
+    if (emailErr) { setError(emailErr); return; }
     setError('');
     setLoading(true);
     try {

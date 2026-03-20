@@ -4,6 +4,8 @@ import { createMatch, createMarket, createMarketOption } from '@/lib/db';
 import { MARKET_TYPES, MARKET_PRESETS } from '@/lib/constants';
 import { Modal, Button, Message } from '@/components/ui/Components';
 import TeamInput from '@/components/ui/TeamInput';
+import { validateTeamName, validateMarketLabel, validateOptionLabel, validateOdds } from '@/lib/validation';
+import '@/styles/components/admin.css';
 
 const makeMarket = (type = '1N2') => {
   const preset = MARKET_PRESETS[type];
@@ -81,14 +83,25 @@ export default function AddMatchModal({ open, tournamentId, onClose, onAdded }) 
 
   // ---- Sauvegarde tout d'un coup ----
   const handleSave = async () => {
-    if (!homeTeam.trim() || !awayTeam.trim() || !kickoff) {
-      setError('Équipes et date du coup d\'envoi requis');
-      return;
+    const homeErr = validateTeamName(homeTeam);
+    if (homeErr) { setError(homeErr); return; }
+    const awayErr = validateTeamName(awayTeam);
+    if (awayErr) { setError(awayErr); return; }
+    if (homeTeam.trim().toLowerCase() === awayTeam.trim().toLowerCase()) {
+      setError('Les deux équipes ne peuvent pas être identiques'); return;
     }
+    if (!kickoff) { setError('La date du coup d\'envoi est requise'); return; }
+
     for (const m of markets) {
-      if (!m.label.trim()) { setError(`Label manquant sur un marché`); return; }
-      if (m.options.length < 2) { setError(`Un marché doit avoir au moins 2 options`); return; }
-      if (m.options.some((o) => !o.label.trim())) { setError(`Toutes les options doivent avoir un label`); return; }
+      const labelErr = validateMarketLabel(m.label);
+      if (labelErr) { setError(labelErr); return; }
+      if (m.options.length < 2) { setError('Un marché doit avoir au moins 2 options'); return; }
+      for (const o of m.options) {
+        const optErr = validateOptionLabel(o.label);
+        if (optErr) { setError(optErr); return; }
+        const oddsErr = validateOdds(o.odds);
+        if (oddsErr) { setError(`Cote invalide : ${oddsErr}`); return; }
+      }
     }
 
     setLoading(true);

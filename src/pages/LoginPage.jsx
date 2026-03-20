@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button, Message } from '@/components/ui/Components';
 import { DEMO_MODE } from '@/lib/supabase';
+import { validateEmail, validateUsername, validatePassword } from '@/lib/validation';
+import '@/styles/components/auth.css';
 
 export default function LoginPage() {
   const { login, register } = useAuth();
@@ -19,10 +21,19 @@ export default function LoginPage() {
     setError('');
 
     if (DEMO_MODE) {
-      if (!username.trim() || !password.trim()) { setError('Tous les champs sont requis'); return; }
+      const usernameErr = validateUsername(username);
+      if (usernameErr) { setError(usernameErr); return; }
+      const pwErr = validatePassword(password, false);
+      if (pwErr) { setError(pwErr); return; }
     } else {
-      if (isRegister && !username.trim()) { setError('Tous les champs sont requis'); return; }
-      if (!email.trim() || !password.trim()) { setError('Tous les champs sont requis'); return; }
+      if (isRegister) {
+        const usernameErr = validateUsername(username);
+        if (usernameErr) { setError(usernameErr); return; }
+      }
+      const emailErr = validateEmail(email);
+      if (emailErr) { setError(emailErr); return; }
+      const pwErr = validatePassword(password, isRegister);
+      if (pwErr) { setError(pwErr); return; }
     }
 
     setLoading(true);

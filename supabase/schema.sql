@@ -165,7 +165,21 @@ CREATE POLICY "Auth insert market_options" ON market_options FOR INSERT WITH CHE
 CREATE POLICY "Auth update market_options" ON market_options FOR UPDATE USING (auth.uid() IS NOT NULL);
 
 -- Paris
-CREATE POLICY "Public read bets" ON bets FOR SELECT USING (true);
-CREATE POLICY "Auth insert bets" ON bets FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
-CREATE POLICY "Auth update bets" ON bets FOR UPDATE USING (auth.uid() IS NOT NULL);
-CREATE POLICY "Auth delete bets" ON bets FOR DELETE USING (auth.uid() IS NOT NULL);
+-- Lecture : uniquement les membres du tournoi concerné
+CREATE POLICY "Members read bets" ON bets FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM tournament_members tm
+      JOIN matches m ON m.tournament_id = tm.tournament_id
+      WHERE m.id = bets.match_id AND tm.user_id = auth.uid()
+    )
+  );
+-- Insert : uniquement pour soi-même
+CREATE POLICY "Auth insert own bets" ON bets FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+-- Update : uniquement ses propres paris
+CREATE POLICY "Auth update own bets" ON bets FOR UPDATE
+  USING (auth.uid() = user_id);
+-- Delete : uniquement ses propres paris
+CREATE POLICY "Auth delete own bets" ON bets FOR DELETE
+  USING (auth.uid() = user_id);

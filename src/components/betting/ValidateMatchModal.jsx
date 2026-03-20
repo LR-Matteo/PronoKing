@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Check } from 'lucide-react';
 import { updateMatch, updateMarketOption, updateBet } from '@/lib/db';
 import { Modal, Button, Message } from '@/components/ui/Components';
+import { validateScore } from '@/lib/validation';
+import '@/styles/components/betting.css';
 
 export default function ValidateMatchModal({ open, match, markets, marketOptions, bets, onClose, onValidated }) {
   const [homeScore, setHomeScore] = useState(match?.home_score ?? '');
@@ -15,12 +17,16 @@ export default function ValidateMatchModal({ open, match, markets, marketOptions
   };
 
   const handleValidate = async () => {
+    const homeErr = validateScore(homeScore);
+    if (homeErr) { setError(`Score domicile : ${homeErr}`); return; }
+    const awayErr = validateScore(awayScore);
+    if (awayErr) { setError(`Score extérieur : ${awayErr}`); return; }
+
     setSaving(true);
     try {
-      // Update match score
       await updateMatch(match.id, {
-        home_score: parseInt(homeScore) || 0,
-        away_score: parseInt(awayScore) || 0,
+        home_score: parseInt(homeScore, 10),
+        away_score: parseInt(awayScore, 10),
         is_finished: true,
       });
 

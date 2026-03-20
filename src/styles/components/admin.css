@@ -1,0 +1,74 @@
+/* ==================== ADMIN SECTION ==================== */
+.admin-section {
+  background: rgba(212, 168, 67, 0.04);
+  border: 1px solid rgba(212, 168, 67, 0.12);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.admin-section h3 {
+  font-size: 14px;
+  color: var(--accent-gold);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Sélecteur de type de marché */
+.market-type-pills { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+
+.market-pill {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: 'Source Sans 3', sans-serif;
+}
+.market-pill:hover { border-color: var(--border-light); }
+.market-pill.active { border-color: var(--accent-gold); color: var(--accent-gold); background: rgba(212, 168, 67, 0.08); }
+
+/* Toggle mode de jetons (CreateTournamentModal) */
+.token-mode-toggle {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.token-mode-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.token-mode-btn:first-child {
+  border-right: 1px solid var(--border);
+}
+
+.token-mode-btn.active {
+  background: var(--accent-gold);
+  color: #000;
+  font-weight: 600;
+}
+
+.token-mode-btn:not(.active):hover {
+  background: var(--surface-2);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .admin-section { padding: 14px; }
+}

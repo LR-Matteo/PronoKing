@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { createTournament, joinTournament } from '@/lib/db';
 import { Modal, Button, Message } from '@/components/ui/Components';
+import { validateTournamentName, validateDescription, validateTokenCount } from '@/lib/validation';
+import '@/styles/components/admin.css';
 
 export default function CreateTournamentModal({ open, onClose, onCreated }) {
   const { user } = useAuth();
@@ -21,23 +23,26 @@ export default function CreateTournamentModal({ open, onClose, onCreated }) {
   const [loading, setLoading] = useState(false);
 
   const handleCreate = async () => {
-    if (!name.trim()) { setError('Le nom est requis'); return; }
+    const nameErr = validateTournamentName(name);
+    if (nameErr) { setError(nameErr); return; }
+    const descErr = validateDescription(description);
+    if (descErr) { setError(descErr); return; }
     if (isPrivate && !password.trim()) { setError('Le mot de passe est requis pour un tournoi privé'); return; }
-    if (maxMembers !== '' && (isNaN(maxMembers) || parseInt(maxMembers) < 2)) {
-      setError('Le nombre max de participants doit être au moins 2');
-      return;
+    if (maxMembers !== '') {
+      const membersErr = validateTokenCount(maxMembers, 2);
+      if (membersErr) { setError('Nombre max de participants : ' + membersErr); return; }
     }
-    if (tokenMode === 'per_match' && (!tokensPerMatch || tokensPerMatch < 1)) {
-      setError('Le nombre de jetons par match doit être au moins 1');
-      return;
+    if (tokenMode === 'per_match') {
+      const tpmErr = validateTokenCount(tokensPerMatch, 1, 1000);
+      if (tpmErr) { setError('Jetons par match : ' + tpmErr); return; }
     }
-    if (tokenMode === 'bank' && (!tokenBank || tokenBank < 1)) {
-      setError('La banque de jetons doit être au moins 1');
-      return;
-    }
-    if (tokenMode === 'bank' && maxTokensPerMatch !== '' && (isNaN(maxTokensPerMatch) || parseInt(maxTokensPerMatch) < 1)) {
-      setError('Le plafond par match doit être au moins 1');
-      return;
+    if (tokenMode === 'bank') {
+      const bankErr = validateTokenCount(tokenBank, 1, 100000);
+      if (bankErr) { setError('Banque de jetons : ' + bankErr); return; }
+      if (maxTokensPerMatch !== '') {
+        const capErr = validateTokenCount(maxTokensPerMatch, 1);
+        if (capErr) { setError('Plafond par match : ' + capErr); return; }
+      }
     }
 
     setLoading(true);

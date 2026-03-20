@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import '@/styles/components/player-dashboard.css';
 import { AlertCircle, ChevronRight, Star, Target, Zap } from 'lucide-react';
 import { formatDateShort, isMatchUpcoming } from '@/lib/utils';
 import { TokenCoin } from '@/components/ui/Components';

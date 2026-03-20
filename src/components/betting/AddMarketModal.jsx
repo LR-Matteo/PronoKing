@@ -3,6 +3,8 @@ import { Plus, X } from 'lucide-react';
 import { createMarket, createMarketOption } from '@/lib/db';
 import { MARKET_TYPES, MARKET_PRESETS } from '@/lib/constants';
 import { Modal, Button, Message } from '@/components/ui/Components';
+import { validateMarketLabel, validateOptionLabel, validateOdds } from '@/lib/validation';
+import '@/styles/components/admin.css';
 
 export default function AddMarketModal({ open, matchId, onClose, onAdded }) {
   const [type, setType] = useState('1N2');
@@ -35,8 +37,15 @@ export default function AddMarketModal({ open, matchId, onClose, onAdded }) {
   };
 
   const handleSave = async () => {
-    if (!label.trim()) { setError('Le label est requis'); return; }
-    if (options.some((o) => !o.label.trim())) { setError('Toutes les options doivent avoir un label'); return; }
+    const labelErr = validateMarketLabel(label);
+    if (labelErr) { setError(labelErr); return; }
+    if (options.length < 2) { setError('Le marché doit avoir au moins 2 options'); return; }
+    for (const o of options) {
+      const optErr = validateOptionLabel(o.label);
+      if (optErr) { setError(optErr); return; }
+      const oddsErr = validateOdds(o.odds);
+      if (oddsErr) { setError(`Cote invalide : ${oddsErr}`); return; }
+    }
 
     setLoading(true);
     try {

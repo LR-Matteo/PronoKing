@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import '@/styles/components/join.css';
 import { Users, Lock, Trophy, ChevronLeft } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetchTournament, fetchTournamentMembers, joinTournament } from '@/lib/db';
