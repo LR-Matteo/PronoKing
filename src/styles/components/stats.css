@@ -1,0 +1,118 @@
+/* ==================== STATS PAGE ==================== */
+.stats-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Oswald', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  margin: 0 0 12px;
+}
+
+.stats-grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 640px) {
+  .stats-grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 12px;
+  text-align: center;
+}
+.stat-card-icon { margin-bottom: 6px; }
+.stat-card-value { font-family: 'Oswald', sans-serif; font-size: 26px; font-weight: 700; line-height: 1; }
+.stat-card-label { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+.stat-card-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+.stats-market-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.stats-market-row:last-child { border-bottom: none; padding-bottom: 0; }
+.stats-market-name { font-size: 13px; color: var(--text-primary); width: 130px; flex-shrink: 0; }
+.stats-market-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 5px;
+}
+.win-bar-bg { height: 5px; border-radius: 3px; background: var(--border); overflow: hidden; }
+.win-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+
+.stats-odds-row { display: flex; align-items: center; gap: 16px; }
+.stats-odds-block {
+  flex: 1;
+  text-align: center;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid;
+  background: var(--bg-secondary);
+}
+.stats-odds-vs { font-family: 'Oswald', sans-serif; font-size: 14px; color: var(--text-muted); flex-shrink: 0; }
+
+.stats-top-bet {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.stats-top-bet:last-child { border-bottom: none; }
+.stats-top-bet-rank {
+  font-family: 'Oswald', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--accent-gold);
+  width: 32px;
+  flex-shrink: 0;
+}
+
+.stats-tournament-row {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+}
+
+.stats-filter-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.stats-filter-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--border-light);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.stats-filter-btn:hover { border-color: var(--accent-gold); color: var(--text-primary); }
+.stats-filter-btn.active {
+  background: color-mix(in srgb, var(--accent-gold) 15%, transparent);
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+  font-weight: 500;
+}
