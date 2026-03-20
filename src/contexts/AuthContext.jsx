@@ -18,16 +18,15 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     if (DEMO_MODE) {
-      // Vider toute session démo persistée au démarrage
       localStorage.removeItem('pronoking_user');
       return;
     }
 
-    // Déconnecter toute session Supabase existante au démarrage → login obligatoire
-    supabase.auth.signOut();
     writeCache(null);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Ignorer la session existante au démarrage → login obligatoire
+      if (event === 'INITIAL_SESSION') return;
       if (event === 'SIGNED_OUT') {
         setUser(null);
         writeCache(null);
