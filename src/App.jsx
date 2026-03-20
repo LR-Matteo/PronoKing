@@ -1,15 +1,17 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './contexts/AuthContext';
 import Navbar from './components/layout/Navbar';
-import LoginPage from './pages/LoginPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import JoinPage from './pages/JoinPage';
-import StatsPage from './pages/StatsPage';
-import TournamentsPage from './pages/TournamentsPage';
-import TournamentPage from './pages/TournamentPage';
-import MatchPage from './pages/MatchPage';
-import PlayerPage from './pages/PlayerPage';
+
+const LoginPage          = lazy(() => import('./pages/LoginPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage  = lazy(() => import('./pages/ResetPasswordPage'));
+const JoinPage           = lazy(() => import('./pages/JoinPage'));
+const StatsPage          = lazy(() => import('./pages/StatsPage'));
+const TournamentsPage    = lazy(() => import('./pages/TournamentsPage'));
+const TournamentPage     = lazy(() => import('./pages/TournamentPage'));
+const MatchPage          = lazy(() => import('./pages/MatchPage'));
+const PlayerPage         = lazy(() => import('./pages/PlayerPage'));
 
 function AppLoader() {
   return (
@@ -35,6 +37,7 @@ export default function App() {
     <div className="app-container">
       <div className="field-pattern" />
 
+      <Suspense fallback={<AppLoader />}>
       <Routes>
         {/* Public */}
         <Route
@@ -108,6 +111,7 @@ export default function App() {
         {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      </Suspense>
     </div>
   );
 }
