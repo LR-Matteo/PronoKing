@@ -29,7 +29,7 @@
 .rank-3 { background: linear-gradient(135deg, #b45309, #d97706); color: white; }
 .rank-default { background: var(--bg-input); color: var(--text-muted); border: 1px solid var(--border); }
 
-.leaderboard-name { flex: 1; font-weight: 500; font-size: 15px; }
+.leaderboard-name { flex: 1; font-weight: 500; font-size: 15px; margin-left: 12px; }
 
 .leaderboard-points {
   font-family: 'Oswald', sans-serif;

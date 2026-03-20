@@ -57,13 +57,13 @@
 
 .user-avatar {
   border-radius: 50%;
-  background: var(--gradient-gold);
+  background: linear-gradient(135deg, #475569, #64748b);
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Oswald', sans-serif;
   font-weight: 600;
-  color: var(--bg-primary);
+  color: white;
   flex-shrink: 0;
   line-height: 1;
   user-select: none;
