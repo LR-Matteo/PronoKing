@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase, DEMO_MODE } from '@/lib/supabase';
 import { findProfileByUsername, createProfile, updateProfile, fetchProfile } from '@/lib/db';
 import { hashPassword, verifyPassword } from '@/lib/crypto';
@@ -6,61 +6,34 @@ import { hashPassword, verifyPassword } from '@/lib/crypto';
 const AuthContext = createContext(null);
 const CACHE_KEY = 'pronoking_profile';
 
-function readCache() {
-  try { return JSON.parse(localStorage.getItem(CACHE_KEY)); } catch { return null; }
-}
+
 function writeCache(profile) {
   if (profile) localStorage.setItem(CACHE_KEY, JSON.stringify(profile));
   else localStorage.removeItem(CACHE_KEY);
 }
 
 export function AuthProvider({ children }) {
-  const cached = DEMO_MODE
-    ? (() => { try { return JSON.parse(localStorage.getItem('pronoking_user')); } catch { return null; } })()
-    : readCache();
-
-  const [user, setUser] = useState(cached);
-  // loading = true seulement sans cache (premier lancement / après logout)
-  const [loading, setLoading] = useState(!DEMO_MODE && !cached);
-  // Évite qu'un getSession() en retard efface un login effectué entre-temps
-  const freshLoginRef = useRef(false);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (DEMO_MODE) return;
+    if (DEMO_MODE) {
+      // Vider toute session démo persistée au démarrage
+      localStorage.removeItem('pronoking_user');
+      return;
+    }
 
-    const timeout = setTimeout(() => setLoading(false), 5000);
-
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      clearTimeout(timeout);
-      if (session?.user) {
-        try {
-          const profile = await fetchProfile(session.user.id);
-          if (profile) {
-            const fullUser = { ...profile, email: session.user.email };
-            setUser(fullUser);
-            writeCache(fullUser);
-          }
-        } catch { /* garder le cache en cas d'erreur réseau */ }
-      } else if (!freshLoginRef.current) {
-        // Pas de session ET pas de login en cours → vider le cache périmé
-        setUser(null);
-        writeCache(null);
-      }
-      setLoading(false);
-    }).catch(() => {
-      clearTimeout(timeout);
-      setLoading(false);
-    });
+    // Déconnecter toute session Supabase existante au démarrage → login obligatoire
+    supabase.auth.signOut();
+    writeCache(null);
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'INITIAL_SESSION') return;
       if (event === 'SIGNED_OUT') {
-        freshLoginRef.current = false;
         setUser(null);
         writeCache(null);
         return;
       }
-      if (session?.user) {
+      if (event === 'SIGNED_IN' && session?.user) {
         try {
           const profile = await fetchProfile(session.user.id);
           if (profile) {
