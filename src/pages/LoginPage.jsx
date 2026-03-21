@@ -68,8 +68,13 @@ export default function LoginPage() {
     <div className="app-container">
       <div className="field-pattern" />
       <div className="auth-page">
-        <div className="auth-card fade-in">
+        <div className="auth-orb auth-orb-1" />
+        <div className="auth-orb auth-orb-2" />
+        <div className="auth-orb auth-orb-3" />
+
+        <div className="auth-card">
           <div className="auth-logo">
+            <span className="auth-logo-crown">👑</span>
             <h1>PRONOKING</h1>
             <p>Le roi des pronostics</p>
           </div>
