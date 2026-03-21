@@ -139,6 +139,30 @@ export default function LoginPage() {
             </div>
           )}
         </div>
+
+        <div className="auth-pitch">
+          <div className="auth-pitch-item">
+            <span className="auth-pitch-icon">🏆</span>
+            <div>
+              <strong>Tournois entre amis</strong>
+              <p>Crée ou rejoins un tournoi privé et défie tes amis sur chaque match.</p>
+            </div>
+          </div>
+          <div className="auth-pitch-item">
+            <span className="auth-pitch-icon">⚽</span>
+            <div>
+              <strong>Parie sur les matchs</strong>
+              <p>Score exact, vainqueur, buteur… prouve que tu as le meilleur instinct foot.</p>
+            </div>
+          </div>
+          <div className="auth-pitch-item">
+            <span className="auth-pitch-icon">📊</span>
+            <div>
+              <strong>Classement en temps réel</strong>
+              <p>Suis ta progression et celle de tes adversaires match après match.</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
